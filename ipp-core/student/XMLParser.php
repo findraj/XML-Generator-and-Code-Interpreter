@@ -71,6 +71,11 @@ class XMLParser
             }
             $order_array[] = $order;
 
+            if (intval($order) < 1)
+            {
+                ErrorHandler::ErrorAndExit("Attribute order value must be at least 1", ReturnCode::INVALID_SOURCE_STRUCTURE);
+            }
+
             $argument_array = array();
             $argument = $child->firstElementChild;
             while ($argument != null)
