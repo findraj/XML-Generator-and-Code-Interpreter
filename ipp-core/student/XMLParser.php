@@ -76,6 +76,11 @@ class XMLParser
             while ($argument != null)
             {
                 $argument_tag = $argument->tagName;
+                if (!preg_match("/arg[\d+]/i", $argument_tag))
+                {
+                    ErrorHandler::ErrorAndExit("Wrong argument format", ReturnCode::INVALID_SOURCE_STRUCTURE);
+                }
+
                 if (in_array($argument_tag, $argument_array))
                 {
                     ErrorHandler::ErrorAndExit("Argument numbers must be unique", ReturnCode::INVALID_SOURCE_STRUCTURE);
