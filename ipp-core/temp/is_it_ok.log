@@ -1,0 +1,54 @@
+Xdebug: [Step Debug] Could not connect to debugging client. Tried: localhost:9000 (through xdebug.client_host/xdebug.client_port).
+IPPcode24 Interpreter
+Usage: php interpret.php [options...]
+
+Options:
+--help            : displays this help and exits
+--source=<file>   : source code in XML format
+--input=<file>    : user inputs
+At least one of the options --source and --input has to be specified.
+For the unspecified option, STDIN is used instead of a file.
+
+Return codes:
+0-9 : correct execution
+10  : invalid parameters
+11  : input file error
+12  : output file error
+31  : invalid source XML format
+32  : invalid source structure
+52  : semantic error
+53  : runtime error - bad operand types
+54  : runtime error - non-existent variable
+55  : runtime error - non-existent frame
+56  : runtime error - missing value
+57  : runtime error - bad operand value
+58  : runtime error - bad string operation
+88  : integration error
+99  : internal error
+Xdebug: [Step Debug] Could not connect to debugging client. Tried: localhost:9000 (through xdebug.client_host/xdebug.client_port).
+IPPcode24 Interpreter
+Usage: php interpret.php [options...]
+
+Options:
+--help            : displays this help and exits
+--source=<file>   : source code in XML format
+--input=<file>    : user inputs
+At least one of the options --source and --input has to be specified.
+For the unspecified option, STDIN is used instead of a file.
+
+Return codes:
+0-9 : correct execution
+10  : invalid parameters
+11  : input file error
+12  : output file error
+31  : invalid source XML format
+32  : invalid source structure
+52  : semantic error
+53  : runtime error - bad operand types
+54  : runtime error - non-existent variable
+55  : runtime error - non-existent frame
+56  : runtime error - missing value
+57  : runtime error - bad operand value
+58  : runtime error - bad string operation
+88  : integration error
+99  : internal error
