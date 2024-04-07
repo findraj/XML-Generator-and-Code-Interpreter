@@ -64,7 +64,7 @@ class XMLParser
             }
 
             $instruction = new Instruction($child);
-            $instruction->order = $order;
+            $instruction->order = intval($order);
 
             if ($child->getAttribute("opcode") == "")
             {

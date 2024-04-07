@@ -5,10 +5,14 @@ namespace IPP\Student;
 use IPP\Core\AbstractInterpreter;
 use IPP\Core\Exception\NotImplementedException;
 use IPP\Core\Exception\XMLException;
+use IPP\Core\ReturnCode;
 use IPP\Student\XMLParser;
+use IPP\Student\Frame;
 
 class Interpreter extends AbstractInterpreter
 {
+    private Frame $frame;
+
     public function execute(): int
     {
         // TODO: Start your code here
@@ -24,6 +28,7 @@ class Interpreter extends AbstractInterpreter
         $XMLparser = new XMLParser($dom);
         $instructionArray = $XMLparser->checkInstructions();
         $instructionArray->sort();
+        $instructionArray->findLabels();
 
         // $instruction = $instructionArray->getNextInstruction();
         // while ($instruction != null)
@@ -32,8 +37,64 @@ class Interpreter extends AbstractInterpreter
         //     $instruction = $instructionArray->getNextInstruction();
         // }
 
-        $frames = new Frame();
+        $this->frame = new Frame();
+
+        $instruction = $instructionArray->getNextInstruction();
+        while ($instruction != null)
+        {
+            if ($instruction->name == "MOVE")
+            {
+                $symb = $this->getSymb($instruction->args[1]->value);
+                $this->frame->setVar($instruction->args[0]->value, $symb[0], $symb[1]);
+            }
+
+            $instruction = $instructionArray->getNextInstruction();
+        }
 
         return 0;
+    }
+
+    /** @return array<string> */
+    public function getSymb(string $symb) : array
+    {
+        $result = array();
+        if (strstr($symb, "F@")) // variable
+        {
+            $result[] = "var";
+            $result[] = $this->frame->getVar($symb);
+        }
+        else
+        {
+            $exploded = explode("@", $symb);
+            if (count($exploded) > 2)
+            {
+                ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::OPERAND_VALUE_ERROR);
+            }
+            $type = $exploded[0];
+            if (count($exploded) == 1)
+            {
+                $value = "";
+            }
+            else
+            {
+                $value = $exploded[1];
+            }
+            $result[] = $type;
+            $result[] = $value;
+
+            if (!in_array($type, ['string', 'int', 'bool', 'label', 'type', 'nil', 'var']))
+            {
+                ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::OPERAND_VALUE_ERROR);
+            }
+
+            if ($type == "nil")
+            {
+                if ($value != "nil")
+                {
+                    ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::OPERAND_VALUE_ERROR);
+                }
+            }
+        }
+        return $result;
     }
 }

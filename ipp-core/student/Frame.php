@@ -53,7 +53,7 @@ class Frame
         }
     }
 
-    public function defvar(string $frame, string $name) : void
+    public function defVar(string $frame, string $name) : void
     {
         $var = new Variable($name);
         if ($frame == "GF")
@@ -82,8 +82,16 @@ class Frame
         }
     }
 
-    public function setvar(string $frame, string $name, string $type, string $value) : void
+    public function setVar(string $variable, string $type, string $value) : void
     {
+        $exploded = explode("@", $variable);
+        if (count($exploded) != 2)
+        {
+            ErrorHandler::ErrorAndExit("Wrong var value", ReturnCode::OPERAND_VALUE_ERROR);
+        }
+
+        $frame = $exploded[0];
+        $name = $exploded[1];
         $defined = false;
         if ($frame == "GF")
         {
@@ -137,5 +145,72 @@ class Frame
         {
             ErrorHandler::ErrorAndExit("Variable is not defined", ReturnCode::FRAME_ACCESS_ERROR);
         }
+    }
+
+    public function getVar(string $variable) : string
+    {
+        $exploded = explode("@", $variable);
+        if (count($exploded) != 2)
+        {
+            ErrorHandler::ErrorAndExit("Wrong var value", ReturnCode::OPERAND_VALUE_ERROR);
+        }
+
+        $frame = $exploded[0];
+        $name = $exploded[1];
+        $value = null;
+
+        if (!in_array($frame, ["GF", "TF", "LF"]))
+        {
+            ErrorHandler::ErrorAndExit("Wrong var value", ReturnCode::OPERAND_VALUE_ERROR);
+        }
+
+        if ($frame == "GF")
+        {
+            foreach ($this->GF as $var)
+            {
+                if ($var->name == $name)
+                {
+                    $value = $var->value;
+                }
+            }
+        }
+        else
+        {
+            if ($frame == "TF")
+            {
+                if (!$this->TFexist) // check if TF exists
+                {
+                    ErrorHandler::ErrorAndExit("TF does not exists", ReturnCode::FRAME_ACCESS_ERROR);
+                }
+                foreach ($this->TF as $var)
+                {
+                    if ($var->name == $name)
+                    {
+                        $value = $var->value;
+                    }
+                }
+            }
+            else
+            {
+                $top = count($this->frameStack) - 1; // index of the top frame
+                if ($top < 0)
+                {
+                    ErrorHandler::ErrorAndExit("LF does not exist", ReturnCode::FRAME_ACCESS_ERROR);
+                }
+                foreach ( $this->frameStack[$top - 1] as $var)
+                {
+                    if ($var->name == $name)
+                    {
+                        $value = $var->value;
+                    }
+                }
+            }
+        }
+        if ($value == null)
+        {
+            ErrorHandler::ErrorAndExit("Variable is not defined", ReturnCode::OPERAND_VALUE_ERROR);
+        }
+
+        return $value;
     }
 }

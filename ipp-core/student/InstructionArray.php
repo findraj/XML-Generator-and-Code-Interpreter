@@ -6,6 +6,8 @@ class InstructionArray
 {
     /** @var array<Instruction> $array */
     public array $array;
+    /** @var array<Label> $labelArray */
+    public array $labelArray;
     public int $instructionCounter;
     public int $current;
 
@@ -24,9 +26,9 @@ class InstructionArray
 
     public function getNextInstruction() : ?Instruction
     {
+        $this->current += 1;
         if ($this->current <= $this->instructionCounter)
         {
-            $this->current += 1;
             return $this->array[$this->current - 1];
         }
         else
@@ -46,5 +48,20 @@ class InstructionArray
     public function sort() : void
     {
         usort($this->array, array($this, 'compareByOrder'));
+    }
+
+    public function findLabels() : void
+    {
+        $instruction = $this->getNextInstruction();
+        while ($instruction != null)
+        {
+            if ($instruction->name == "LABEL")
+            {
+                $label = new Label($this->current, $instruction->args[0]->value);
+                $this->labelArray[] = $label;
+            }
+            $instruction = $this->getNextInstruction();
+        }
+        $this->current = 0;
     }
 }
