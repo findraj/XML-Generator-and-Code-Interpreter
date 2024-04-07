@@ -16,7 +16,7 @@ class XMLParser
         $this->checkInstructions($root);
     }
 
-    private function checkRoot(DOMElement $root)
+    private function checkRoot(DOMElement $root) : void
     {
         if ($root->tagName != "program")
         {
@@ -43,7 +43,7 @@ class XMLParser
         }
     }
 
-    private function checkInstructions(DOMElement $root)
+    private function checkInstructions(DOMElement $root) : void
     {
         $child = $root->firstElementChild;
         $order_array = array();
