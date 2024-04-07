@@ -14,7 +14,7 @@ class Instruction
 
     public function __construct(protected DOMElement $element)
     {
-        $this->name = $element->tagName;
+        $this->name = $element->getAttribute("opcode");
         $this->argsCount = 0;
         $this->args = array();
         
