@@ -26,7 +26,7 @@ class Instruction
             $argument = new Argument();
 
             $subElement_tag = $subElement->tagName;
-            if (!preg_match("/arg[\d+]/i", $subElement_tag)) {
+            if (!preg_match("/arg[0-3]/i", $subElement_tag)) {
                 ErrorHandler::ErrorAndExit("Wrong argument format", ReturnCode::INVALID_SOURCE_STRUCTURE);
             }
 

@@ -42,10 +42,40 @@ class Interpreter extends AbstractInterpreter
         $instruction = $instructionArray->getNextInstruction();
         while ($instruction != null)
         {
+            if (!array_key_exists($instruction->name, $instructionArray->instructionDictionary))
+            {
+                ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::OPERAND_VALUE_ERROR);
+            }
+            else
+            {
+                $params = $instructionArray->instructionDictionary[$instruction->name];
+
+                if (count($params) != count($instruction->args))
+                {
+                    ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::OPERAND_TYPE_ERROR);
+                }
+
+                $index = 0;
+                foreach ($params as $param)
+                {
+                    if ($param != "symb")
+                    {
+                        if ($param != $instruction->args[$index]->type)
+                        {
+                            ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::OPERAND_TYPE_ERROR);
+                        }
+                    }
+                $index += 1;
+                }
+            }
             if ($instruction->name == "MOVE")
             {
                 $symb = $this->getSymb($instruction->args[1]->value);
                 $this->frame->setVar($instruction->args[0]->value, $symb[0], $symb[1]);
+            }
+            else if ($instruction->name == "CREATEFRAME")
+            {
+
             }
 
             $instruction = $instructionArray->getNextInstruction();

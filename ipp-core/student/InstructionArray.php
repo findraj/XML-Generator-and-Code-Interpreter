@@ -8,6 +8,8 @@ class InstructionArray
     public array $array;
     /** @var array<Label> $labelArray */
     public array $labelArray;
+    /** @var array<array<string>> $instructionDictionary */
+    public array $instructionDictionary;
     public int $instructionCounter;
     public int $current;
 
@@ -16,6 +18,44 @@ class InstructionArray
         $this->array = array();
         $this->instructionCounter = 0;
         $this->current = 0;
+        $this->instructionDictionary = array(
+            "MOVE" => array("var", "symb", "symb"),
+            "CREATEFRAME" => array(),
+            "PUSHFRAME" => array(),
+            "POPFRAME" => array(),
+            "DEFVAR" => array("var"),
+            "CALL" => array("label"),
+            "RETURN" => array(),
+            "PUSHS" => array("symb"),
+            "POPS" => array("var"),
+            "ADD" => array("var", "symb", "symb"),
+            "SUB" => array("var", "symb", "symb"),
+            "MUL" => array("var", "symb", "symb"),
+            "IDIV" => array("var", "symb", "symb"),
+            "LT" => array("var", "symb", "symb"),
+            "GT" => array("var", "symb", "symb"),
+            "EQ" => array("var", "symb", "symb"),
+            "AND" => array("var", "symb", "symb"),
+            "OR" => array("var", "symb", "symb"),
+            "NOT" => array("var", "symb"),
+            "INT2CHAR" => array("var", "symb"),
+            "STRI2INT" => array("var", "symb", "symb"),
+            "READ" => array("var", "type"),
+            "WRITE" => array("symb"),
+            "CONCAT" => array("var", "symb", "symb"),
+            "STRLEN" => array("var", "symb"),
+            "GETCHAR" => array("var", "symb", "symb"),
+            "SETCHAR" => array("var", "symb", "symb"),
+            "TYPE" => array("var", "symb"),
+            "LABEL" => array("label"),
+            "JUMP" => array("label"),
+            "JUMPIFEQ" => array("label", "symb", "symb"),
+            "JUMPIFNEQ" => array("label", "symb", "symb"),
+            "EXIT" => array("symb"),
+            "DPRINT" => array("symb"),
+            "BREAK" => array()
+        );
+        
     }
 
     public function insertInstruction(Instruction $instruction) : void
