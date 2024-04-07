@@ -6,14 +6,16 @@ use DOMDocument;
 use DOMElement;
 use IPP\Student\ErrorHandler;
 use IPP\Core\ReturnCode;
+use IPP\Student\InstructionArray;
 
 class XMLParser
 {
+    private DOMElement $root;
+
     public function __construct(protected DOMDocument $domDocument)
     {
-        $root = $domDocument->firstElementChild; // XML root
-        $this->checkRoot($root);
-        $this->checkInstructions($root);
+        $this->root = $domDocument->firstElementChild; // XML root
+        $this->checkRoot($this->root);
     }
 
     private function checkRoot(DOMElement $root) : void
@@ -43,9 +45,10 @@ class XMLParser
         }
     }
 
-    private function checkInstructions(DOMElement $root) : void
+    public function checkInstructions() : InstructionArray
     {
-        $child = $root->firstElementChild;
+        $instructionArray = new InstructionArray();
+        $child = $this->root->firstElementChild;
         $order_array = array();
         while ($child != null)
         {
@@ -61,8 +64,7 @@ class XMLParser
             }
 
             $instruction = new Instruction($child);
-            // printf("%s\n%d\n", $instruction->name, $instruction->argsCount);
-            // print_r($instruction->args);
+            $instruction->order = $order;
 
             if ($child->getAttribute("opcode") == "")
             {
@@ -80,7 +82,10 @@ class XMLParser
                 ErrorHandler::ErrorAndExit("Attribute order value must be at least 1", ReturnCode::INVALID_SOURCE_STRUCTURE);
             }
 
+            $instructionArray->insertInstruction($instruction);
             $child = $child->nextElementSibling;
         }
+
+        return $instructionArray;
     }
 }

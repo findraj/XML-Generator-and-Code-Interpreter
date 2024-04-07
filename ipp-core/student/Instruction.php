@@ -8,6 +8,7 @@ use IPP\Student\Argument;
 
 class Instruction
 {
+    public int $order;
     public string $name;
     public int $argsCount;
     /** @var  array<Argument> $args */
@@ -36,7 +37,7 @@ class Instruction
 
             $type = $subElement->getAttribute("type");
             $argument->type = $type;
-            
+
             if ($type == "") {
                 ErrorHandler::ErrorAndExit("Argument must have attribute type", ReturnCode::INVALID_SOURCE_STRUCTURE);
             }

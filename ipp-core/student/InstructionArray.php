@@ -13,7 +13,7 @@ class InstructionArray
     {
         $this->array = array();
         $this->instructionCounter = 0;
-        $this->current = 1;
+        $this->current = 0;
     }
 
     public function insertInstruction(Instruction $instruction) : void
@@ -33,5 +33,18 @@ class InstructionArray
         {
             return null;
         }
+    }
+
+    private function compareByOrder(Instruction $a, Instruction $b) : int
+    {
+        if ($a->order == $b->order) {
+            return 0;
+        }
+        return ($a->order < $b->order) ? -1 : 1;
+    }
+
+    public function sort() : void
+    {
+        usort($this->array, array($this, 'compareByOrder'));
     }
 }

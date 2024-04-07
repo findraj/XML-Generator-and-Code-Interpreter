@@ -22,6 +22,16 @@ class Interpreter extends AbstractInterpreter
 
         $dom = $this->source->getDOMDocument();
         $XMLparser = new XMLParser($dom);
+        $instructionArray = $XMLparser->checkInstructions();
+        $instructionArray->sort();
+
+        // $instruction = $instructionArray->getNextInstruction();
+        // while ($instruction != null)
+        // {
+        //     print_r($instruction);
+        //     $instruction = $instructionArray->getNextInstruction();
+        // }
+
         $frames = new Frame();
 
         return 0;
