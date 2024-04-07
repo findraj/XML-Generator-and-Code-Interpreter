@@ -22,7 +22,7 @@ class Interpreter extends AbstractInterpreter
 
         $dom = $this->source->getDOMDocument();
         $XMLparser = new XMLParser($dom);
-        
+        $frames = new Frame();
 
         return 0;
     }

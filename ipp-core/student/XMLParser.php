@@ -60,6 +60,10 @@ class XMLParser
                 ErrorHandler::ErrorAndExit("Missing attribute", ReturnCode::INVALID_SOURCE_STRUCTURE);
             }
 
+            $instruction = new Instruction($child);
+            // printf("%s\n%d\n", $instruction->name, $instruction->argsCount);
+            // print_r($instruction->args);
+
             if ($child->getAttribute("opcode") == "")
             {
                 ErrorHandler::ErrorAndExit("Missing attribute", ReturnCode::INVALID_SOURCE_STRUCTURE);
@@ -74,36 +78,6 @@ class XMLParser
             if (intval($order) < 1)
             {
                 ErrorHandler::ErrorAndExit("Attribute order value must be at least 1", ReturnCode::INVALID_SOURCE_STRUCTURE);
-            }
-
-            $argument_array = array();
-            $argument = $child->firstElementChild;
-            while ($argument != null)
-            {
-                $argument_tag = $argument->tagName;
-                if (!preg_match("/arg[\d+]/i", $argument_tag))
-                {
-                    ErrorHandler::ErrorAndExit("Wrong argument format", ReturnCode::INVALID_SOURCE_STRUCTURE);
-                }
-
-                if (in_array($argument_tag, $argument_array))
-                {
-                    ErrorHandler::ErrorAndExit("Argument numbers must be unique", ReturnCode::INVALID_SOURCE_STRUCTURE);
-                }
-                $argument_array[] = $argument_tag;
-
-                $type = $argument->getAttribute("type");
-                if ($type == "")
-                {
-                    ErrorHandler::ErrorAndExit("Argument must have attribute type", ReturnCode::INVALID_SOURCE_STRUCTURE);
-                }
-
-                if (!in_array($type, ['string', 'int', 'bool', 'label', 'type', 'nil', 'var']))
-                {
-                    ErrorHandler::ErrorAndExit("Wrong argument type", ReturnCode::INVALID_SOURCE_STRUCTURE);
-                }
-
-                $argument = $argument->nextElementSibling;
             }
 
             $child = $child->nextElementSibling;
