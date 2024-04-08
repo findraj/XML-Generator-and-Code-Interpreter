@@ -125,18 +125,30 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "ADD":
+                    $this->checkInt($this->getSymb($instruction->args[1]));
+                    $this->checkInt($this->getSymb($instruction->args[2]));
                     $this->frame->setVar($instruction->args[0]->value, "int", strval(intval($this->getSymb($instruction->args[1])->value) + intval($this->getSymb($instruction->args[2])->value)));
                     break;
 
                 case "SUB":
+                    $this->checkInt($this->getSymb($instruction->args[1]));
+                    $this->checkInt($this->getSymb($instruction->args[2]));
                     $this->frame->setVar($instruction->args[0]->value, "int", strval(intval($this->getSymb($instruction->args[1])->value) - intval($this->getSymb($instruction->args[2])->value)));
                     break;
 
                 case "MUL":
+                    $this->checkInt($this->getSymb($instruction->args[1]));
+                    $this->checkInt($this->getSymb($instruction->args[2]));
                     $this->frame->setVar($instruction->args[0]->value, "int", strval(intval($this->getSymb($instruction->args[1])->value) * intval($this->getSymb($instruction->args[2])->value)));
                     break;
 
                 case "IDIV":
+                    $this->checkInt($this->getSymb($instruction->args[1]));
+                    $this->checkInt($this->getSymb($instruction->args[2]));
+                    if (intval($this->getSymb($instruction->args[2])->value) == 0)
+                    {
+                        ErrorHandler::ErrorAndExit("Division by zero", ReturnCode::OPERAND_VALUE_ERROR);
+                    }
                     $this->frame->setVar($instruction->args[0]->value, "int", strval(intval($this->getSymb($instruction->args[1])->value) / intval($this->getSymb($instruction->args[2])->value)));
                     break;
 
@@ -324,7 +336,7 @@ class Interpreter extends AbstractInterpreter
         {
             if (!is_numeric($symb->value))
             {
-                ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_VALUE_ERROR);
+                ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::INVALID_SOURCE_STRUCTURE);
             }
             return $symb;
         }
@@ -353,6 +365,14 @@ class Interpreter extends AbstractInterpreter
             return $symb;
         }
         else
+        {
+            ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_TYPE_ERROR);
+        }
+    }
+
+    private function checkInt(Argument $symb) : void
+    {
+        if (!is_numeric($symb->value) || $symb->type != "int")
         {
             ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_TYPE_ERROR);
         }
