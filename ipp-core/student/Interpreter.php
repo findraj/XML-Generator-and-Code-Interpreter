@@ -102,6 +102,33 @@ class Interpreter extends AbstractInterpreter
             }
             return $symb;
         }
-        // TODO
+        else if ($symb->type == "string")
+        {
+            if (!is_string($symb->value))
+            {
+                ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_VALUE_ERROR);
+            }
+            return $symb;
+        }
+        else if ($symb->type == "bool")
+        {
+            if (!is_bool($symb->value))
+            {
+                ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_VALUE_ERROR);
+            }
+            return $symb;
+        }
+        else if ($symb->type == "nil")
+        {
+            if ($symb->value != "nil")
+            {
+                ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_VALUE_ERROR);
+            }
+            return $symb;
+        }
+        else
+        {
+            ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_TYPE_ERROR);
+        }
     }
 }
