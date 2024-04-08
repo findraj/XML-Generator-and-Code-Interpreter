@@ -29,6 +29,8 @@ class Instruction
             if (!preg_match("/arg[0-3]/i", $subElement_tag)) {
                 ErrorHandler::ErrorAndExit("Wrong argument format", ReturnCode::INVALID_SOURCE_STRUCTURE);
             }
+            $argOrder = preg_replace('/\D/', '', $subElement_tag);
+            $argument->order = $argOrder;
 
             if (in_array($subElement_tag, $subElement_array)) {
                 ErrorHandler::ErrorAndExit("Argument numbers must be unique", ReturnCode::INVALID_SOURCE_STRUCTURE);
@@ -52,5 +54,19 @@ class Instruction
             $this->argsCount += 1;
             $subElement = $subElement->nextElementSibling;
         }
+        $this->sort();
+    }
+
+    private function compareByOrder(Argument $a, Argument $b) : int
+    {
+        if ($a->order == $b->order) {
+            return 0;
+        }
+        return ($a->order < $b->order) ? -1 : 1;
+    }
+
+    public function sort() : void
+    {
+        usort($this->args, array($this, 'compareByOrder'));
     }
 }

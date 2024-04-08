@@ -19,7 +19,7 @@ class InstructionArray
         $this->instructionCounter = 0;
         $this->current = 0;
         $this->instructionDictionary = array(
-            "MOVE" => array("var", "symb", "symb"),
+            "MOVE" => array("var", "symb"),
             "CREATEFRAME" => array(),
             "PUSHFRAME" => array(),
             "POPFRAME" => array(),

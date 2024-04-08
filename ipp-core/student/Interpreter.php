@@ -52,7 +52,7 @@ class Interpreter extends AbstractInterpreter
 
                 if (count($params) != count($instruction->args))
                 {
-                    ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::OPERAND_TYPE_ERROR);
+                    ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->name, ReturnCode::INVALID_SOURCE_STRUCTURE);
                 }
 
                 $index = 0;
@@ -62,7 +62,7 @@ class Interpreter extends AbstractInterpreter
                     {
                         if ($param != $instruction->args[$index]->type)
                         {
-                            ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::OPERAND_TYPE_ERROR);
+                            ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->name, ReturnCode::OPERAND_TYPE_ERROR);
                         }
                     }
                 $index += 1;
