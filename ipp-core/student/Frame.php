@@ -3,6 +3,9 @@
 namespace IPP\Student;
 
 use IPP\Core\ReturnCode;
+use IPP\Student\Argument;
+
+use function PHPSTORM_META\type;
 
 class Frame
 {
@@ -147,8 +150,9 @@ class Frame
         }
     }
 
-    public function getVar(string $variable) : string
+    public function getVar(string $variable) : Argument
     {
+        $result = new Argument();
         $exploded = explode("@", $variable);
         if (count($exploded) != 2)
         {
@@ -157,7 +161,7 @@ class Frame
 
         $frame = $exploded[0];
         $name = $exploded[1];
-        $value = null;
+        $result->value = null;
 
         if (!in_array($frame, ["GF", "TF", "LF"]))
         {
@@ -170,7 +174,8 @@ class Frame
             {
                 if ($var->name == $name)
                 {
-                    $value = $var->value;
+                    $result->value = $var->value;
+                    $result->type = $var->type;
                 }
             }
         }
@@ -186,7 +191,8 @@ class Frame
                 {
                     if ($var->name == $name)
                     {
-                        $value = $var->value;
+                        $result->value = $var->value;
+                        $result->type = $var->type;
                     }
                 }
             }
@@ -201,16 +207,17 @@ class Frame
                 {
                     if ($var->name == $name)
                     {
-                        $value = $var->value;
+                        $result->value = $var->value;
+                        $result->type = $var->type;
                     }
                 }
             }
         }
-        if ($value == null)
+        if ($result->value == null)
         {
             ErrorHandler::ErrorAndExit("Variable is not defined", ReturnCode::OPERAND_VALUE_ERROR);
         }
 
-        return $value;
+        return $result;
     }
 }

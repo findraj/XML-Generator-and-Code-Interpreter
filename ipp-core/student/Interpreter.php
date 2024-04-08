@@ -44,7 +44,7 @@ class Interpreter extends AbstractInterpreter
         {
             if (!array_key_exists($instruction->name, $instructionArray->instructionDictionary))
             {
-                ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::OPERAND_VALUE_ERROR);
+                ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::INVALID_SOURCE_STRUCTURE);
             }
             else
             {
@@ -65,13 +65,17 @@ class Interpreter extends AbstractInterpreter
                             ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->name, ReturnCode::OPERAND_TYPE_ERROR);
                         }
                     }
+                    if ($param != "var") // check right argument definition and in case of variable, replace with saved value
+                    {
+                        $instruction->args[$index] = $this->getSymb($instruction->args[$index]);
+                    }
                 $index += 1;
                 }
             }
             if ($instruction->name == "MOVE")
             {
-                $symb = $this->getSymb($instruction->args[1]->value);
-                $this->frame->setVar($instruction->args[0]->value, $symb[0], $symb[1]);
+                $symb = $this->getSymb($instruction->args[1]);
+                $this->frame->setVar($instruction->args[0]->value, $symb->type, $symb->value);
             }
             else if ($instruction->name == "CREATEFRAME")
             {
@@ -84,47 +88,20 @@ class Interpreter extends AbstractInterpreter
         return 0;
     }
 
-    /** @return array<string> */
-    public function getSymb(string $symb) : array
+    public function getSymb(Argument $symb) : Argument
     {
-        $result = array();
-        if (strstr($symb, "F@")) // variable
+        if ($symb->type == "var")
         {
-            $result[] = "var";
-            $result[] = $this->frame->getVar($symb);
+            return $this->frame->getVar($symb->value);
         }
-        else
+        else if ($symb->type == "int")
         {
-            $exploded = explode("@", $symb);
-            if (count($exploded) > 2)
+            if (!is_numeric($symb->value))
             {
-                ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::OPERAND_VALUE_ERROR);
+                ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_VALUE_ERROR);
             }
-            $type = $exploded[0];
-            if (count($exploded) == 1)
-            {
-                $value = "";
-            }
-            else
-            {
-                $value = $exploded[1];
-            }
-            $result[] = $type;
-            $result[] = $value;
-
-            if (!in_array($type, ['string', 'int', 'bool', 'label', 'type', 'nil', 'var']))
-            {
-                ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::OPERAND_VALUE_ERROR);
-            }
-
-            if ($type == "nil")
-            {
-                if ($value != "nil")
-                {
-                    ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::OPERAND_VALUE_ERROR);
-                }
-            }
+            return $symb;
         }
-        return $result;
+        // TODO
     }
 }
