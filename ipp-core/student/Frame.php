@@ -173,7 +173,14 @@ class Frame
                 if ($var->name == $name)
                 {
                     $result->value = $var->value;
-                    $result->type = $var->type;
+                    if ($result->type == null)
+                    {
+                        $result->type = "";
+                    }
+                    else
+                    {
+                        $result->type = $var->type;
+                    }
                 }
             }
         }
@@ -201,7 +208,7 @@ class Frame
                 {
                     ErrorHandler::ErrorAndExit("LF does not exist", ReturnCode::FRAME_ACCESS_ERROR);
                 }
-                foreach ( $this->frameStack[$top - 1] as $var)
+                foreach ( $this->frameStack[$top] as $var)
                 {
                     if ($var->name == $name)
                     {

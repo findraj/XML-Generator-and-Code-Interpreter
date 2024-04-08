@@ -2,6 +2,8 @@
 
 namespace IPP\Student;
 
+use IPP\Core\ReturnCode;
+
 class InstructionArray
 {
     /** @var array<Instruction> $array */
@@ -92,12 +94,20 @@ class InstructionArray
 
     public function findLabels() : void
     {
+        $this->labelArray = array();
         $instruction = $this->getNextInstruction();
         while ($instruction != null)
         {
             if ($instruction->name == "LABEL")
             {
                 $label = new Label($this->current, $instruction->args[0]->value);
+                foreach ($this->labelArray as $labelObject)
+                {
+                    if ($labelObject->label == $label->label)
+                    {
+                        ErrorHandler::ErrorAndExit("Label already exists", ReturnCode::SEMANTIC_ERROR);
+                    }
+                }
                 $this->labelArray[] = $label;
             }
             $instruction = $this->getNextInstruction();

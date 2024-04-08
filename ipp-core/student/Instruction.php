@@ -55,7 +55,7 @@ class Instruction
             $subElement = $subElement->nextElementSibling;
         }
         $this->sort();
-        if (count($this->args) != $this->args[count($this->args) - 1]->order)
+        if (count($this->args) != 0 && count($this->args) != $this->args[count($this->args) - 1]->order)
         {
             ErrorHandler::ErrorAndExit("Wrong argument type", ReturnCode::INVALID_SOURCE_STRUCTURE);
         }

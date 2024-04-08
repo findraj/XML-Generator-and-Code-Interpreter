@@ -188,40 +188,11 @@ class Interpreter extends AbstractInterpreter
                     $input = $this->input->readString();
                     if ($input != "")
                     {
-                        $exploded = explode("@", $instruction->args[1]->value);
-                        if ($exploded[1] == "int")
-                        {
-                            if (!is_numeric($input))
-                            {
-                                $this->frame->setVar($instruction->args[0]->value, "nil", "nil");
-                            }
-                            else
-                            {
-                                $this->frame->setVar($instruction->args[0]->value, "int", $input);
-                            }
-                        }
-                        else if ($exploded[1] == "string")
-                        {
-                            if (!is_string($input))
-                            {
-                                $this->frame->setVar($instruction->args[0]->value, "nil", "nil");
-                            }
-                            else
-                            {
-                                $this->frame->setVar($instruction->args[0]->value, "string", $input);
-                            }
-                        }
-                        else if ($exploded[1] == "bool")
-                        {
-                            if (!is_bool(boolval($input)))
-                            {
-                                $this->frame->setVar($instruction->args[0]->value, "nil", "nil");
-                            }
-                            else
-                            {
-                                $this->frame->setVar($instruction->args[0]->value, "bool", $input);
-                            }
-                        }
+                        $tmp = new Argument();
+                        $tmp->type = $instruction->args[1]->value;
+                        $tmp->value = $input;
+                        $this->getSymb($tmp); // just to check if the input is correct
+                        $this->frame->setVar($instruction->args[0]->value, $instruction->args[1]->value, $input);
                     }
                     else
                     {
@@ -351,6 +322,18 @@ class Interpreter extends AbstractInterpreter
         else if ($symb->type == "bool")
         {
             if (!is_bool(boolval($symb->value)))
+            {
+                ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_VALUE_ERROR);
+            }
+            return $symb;
+        }
+        else if ($symb->type == "label")
+        {
+            return $symb;
+        }
+        else if ($symb->type == "type")
+        {
+            if (!in_array($symb->value, ["int", "string", "bool", "nil", "label", "type", "var"]))
             {
                 ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_VALUE_ERROR);
             }
