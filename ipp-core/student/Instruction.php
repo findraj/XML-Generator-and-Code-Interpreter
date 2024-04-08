@@ -30,7 +30,7 @@ class Instruction
                 ErrorHandler::ErrorAndExit("Wrong argument format", ReturnCode::INVALID_SOURCE_STRUCTURE);
             }
             $argOrder = preg_replace('/\D/', '', $subElement_tag);
-            $argument->order = $argOrder;
+            $argument->order = intval($argOrder);
 
             if (in_array($subElement_tag, $subElement_array)) {
                 ErrorHandler::ErrorAndExit("Argument numbers must be unique", ReturnCode::INVALID_SOURCE_STRUCTURE);

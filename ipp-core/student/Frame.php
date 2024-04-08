@@ -5,8 +5,6 @@ namespace IPP\Student;
 use IPP\Core\ReturnCode;
 use IPP\Student\Argument;
 
-use function PHPSTORM_META\type;
-
 class Frame
 {
     /** @var array<Variable> $GF */
