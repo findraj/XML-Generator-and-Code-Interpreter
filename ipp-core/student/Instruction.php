@@ -55,6 +55,10 @@ class Instruction
             $subElement = $subElement->nextElementSibling;
         }
         $this->sort();
+        if (count($this->args) != $this->args[count($this->args) - 1]->order)
+        {
+            ErrorHandler::ErrorAndExit("Wrong argument type", ReturnCode::INVALID_SOURCE_STRUCTURE);
+        }
     }
 
     private function compareByOrder(Argument $a, Argument $b) : int
