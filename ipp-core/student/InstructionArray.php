@@ -104,4 +104,16 @@ class InstructionArray
         }
         $this->current = 0;
     }
+
+    public function getLabel(string $label) : ?Label
+    {
+        foreach ($this->labelArray as $labelObject)
+        {
+            if ($labelObject->label == $label)
+            {
+                return $labelObject;
+            }
+        }
+        return null;
+    }
 }

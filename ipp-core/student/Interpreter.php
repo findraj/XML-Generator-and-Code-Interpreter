@@ -12,6 +12,10 @@ use IPP\Student\Frame;
 class Interpreter extends AbstractInterpreter
 {
     private Frame $frame;
+    /** @var array<Argument> $stack */
+    private array $stack;
+    /** @var array<int> $positon */
+    private array $positon;
 
     public function execute(): int
     {
@@ -96,19 +100,28 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "CALL":
-                    // TODO
+                    $this->positon[] = $instructionArray->current;
+                    $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
                     break;
 
                 case "RETURN":
-                    // TODO
+                    $instructionArray->current = array_pop($this->positon);
                     break;
 
                 case "PUSHS":
-                    // TODO
+                    $this->stack[] = $this->getSymb($instruction->args[0]);
                     break;
 
                 case "POPS":
-                    // TODO
+                    if (count($this->stack) == 0)
+                    {
+                        ErrorHandler::ErrorAndExit("Stack is empty", ReturnCode::VALUE_ERROR);
+                    }
+                    else
+                    {
+                        $this->frame->setVar($instruction->args[0]->value, $this->stack[count($this->stack) - 1]->type, $this->stack[count($this->stack) - 1]->value);
+                        array_pop($this->stack);
+                    }
                     break;
 
                 case "ADD":
@@ -215,7 +228,81 @@ class Interpreter extends AbstractInterpreter
                         $this->stdout->writeString($toPrint->value);
                     }
                     break;
-                    
+                
+                case "CONCAT":
+                    $this->frame->setVar($instruction->args[0]->value, "string", $this->getSymb($instruction->args[1])->value . $this->getSymb($instruction->args[2])->value);
+                    break;
+
+                case "STRLEN":
+                    $this->frame->setVar($instruction->args[0]->value, "int", strval(strlen($this->getSymb($instruction->args[1])->value)));
+                    break;
+
+                case "GETCHAR":
+                    $this->frame->setVar($instruction->args[0]->value, "string", $this->getSymb($instruction->args[1])->value[intval($this->getSymb($instruction->args[2])->value)]);
+                    break;
+
+                case "SETCHAR":
+                    $this->frame->setVar($instruction->args[0]->value, "string", substr_replace($this->getSymb($instruction->args[1])->value, $this->getSymb($instruction->args[2])->value, intval($this->getSymb($instruction->args[3])->value), 1));
+                    break;
+
+                case "TYPE":
+                    $symb = $this->getSymb($instruction->args[1]);
+                    if ($symb == null)
+                    {
+                        $this->frame->setVar($instruction->args[0]->value, "string", "");
+                    }
+                    else if ($symb->type == "var")
+                    {
+                        $this->frame->setVar($instruction->args[0]->value, "string", $this->frame->getVar($symb->value)->type);
+                    }
+                    else
+                    {
+                        $this->frame->setVar($instruction->args[0]->value, "string", $symb->type);
+                    }
+                    break;
+
+                case "LABEL":
+                    break;
+
+                case "JUMP":
+                    $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
+                    break;
+
+                case "JUMPIFEQ":
+                    if ($this->getSymb($instruction->args[1])->value == $this->getSymb($instruction->args[2])->value)
+                    {
+                        $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
+                    }
+                    break;
+
+                case "JUMPIFNEQ":
+                    if ($this->getSymb($instruction->args[1])->value != $this->getSymb($instruction->args[2])->value)
+                    {
+                        $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
+                    }
+                    break;
+
+                case "EXIT":
+                    $this->stdout->writeString("EXIT: " . $this->getSymb($instruction->args[0])->value);
+                    exit(intval($this->getSymb($instruction->args[0])->value));
+
+                case "DPRINT":
+                    $toPrint = $this->getSymb($instruction->args[0]);
+                    if ($toPrint->type == "nil")
+                    {
+                        $this->stderr->writeString("");
+                    }
+                    else
+                    {
+                        $this->stderr->writeString($toPrint->value);
+                    }
+                    break;
+
+                case "BREAK":
+                    $this->stderr->writeString("Position in code: " . $instructionArray->current . "\n");
+                    $this->stderr->writeString("Stack: " . print_r($this->stack, true) . "\n");
+                    break;
+
                 default:
                     ErrorHandler::ErrorAndExit("Unknown instruction: " . $instruction->name, ReturnCode::INVALID_SOURCE_STRUCTURE);
                     break;
