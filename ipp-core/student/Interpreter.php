@@ -69,10 +69,6 @@ class Interpreter extends AbstractInterpreter
                             ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->name, ReturnCode::OPERAND_TYPE_ERROR);
                         }
                     }
-                    if ($param != "var") // check right constant definition
-                    {
-                        $instruction->args[$index] = $this->getSymb($instruction->args[$index]);
-                    }
                 $index += 1;
                 }
             }

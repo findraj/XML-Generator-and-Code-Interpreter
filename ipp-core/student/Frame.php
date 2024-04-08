@@ -173,7 +173,7 @@ class Frame
                 if ($var->name == $name)
                 {
                     $result->value = $var->value;
-                    if ($result->type == null)
+                    if ($var->type == null)
                     {
                         $result->type = "";
                     }
