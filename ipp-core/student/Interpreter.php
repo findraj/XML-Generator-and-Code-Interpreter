@@ -13,9 +13,9 @@ class Interpreter extends AbstractInterpreter
 {
     private Frame $frame;
     /** @var array<Argument> $stack */
-    private array $stack;
+    private array $stack = array();
     /** @var array<int> $positon */
-    private array $positon;
+    private array $positon = array();
 
     public function execute(): int
     {
@@ -63,7 +63,7 @@ class Interpreter extends AbstractInterpreter
                 $index = 0;
                 foreach ($params as $param)
                 {
-                    if ($param != "symb")
+                    if ($param != "symb" && $instruction->args[$index]->type != "var")
                     {
                         if ($param != $instruction->args[$index]->type)
                         {
@@ -106,6 +106,10 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "RETURN":
+                    if (count($this->positon) == 0)
+                    {
+                        ErrorHandler::ErrorAndExit("Stack is empty", ReturnCode::VALUE_ERROR);
+                    }
                     $instructionArray->current = array_pop($this->positon);
                     break;
 
@@ -154,58 +158,249 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "LT":
-                    $this->frame->setVar($instruction->args[0]->value, "bool", strval($this->getSymb($instruction->args[1])->value < $this->getSymb($instruction->args[2])->value));
-                    break;
-
-                case "GT":
-                    $this->frame->setVar($instruction->args[0]->value, "bool", strval($this->getSymb($instruction->args[1])->value > $this->getSymb($instruction->args[2])->value));
-                    break;
-
-                case "EQ":
-                    if ($this->getSymb($instruction->args[1])->value == $this->getSymb($instruction->args[2])->value)
+                    $a = $this->getSymb($instruction->args[1]);
+                    $b = $this->getSymb($instruction->args[2]);
+                    if ($a->type == "int" && $b->type == "int")
                     {
-                        $result = "true";
+                        if (intval($a->value) < intval($b->value))
+                        {
+                            $result = "true";
+                        }
+                        else
+                        {
+                            $result = "false";
+                        }
+                    }
+                    else if ($a->type == "string" && $b->type == "string")
+                    {
+                        if ($a->value < $b->value)
+                        {
+                            $result = "true";
+                        }
+                        else
+                        {
+                            $result = "false";
+                        }
+                    }
+                    else if ($a->type == "bool" && $b->type == "bool")
+                    {
+                        if ($a->value == "false" && $b->value == "true")
+                        {
+                            $result = "true";
+                        }
+                        else
+                        {
+                            $result = "false";
+                        }
                     }
                     else
                     {
-                        $result = "false";
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $a->value, ReturnCode::OPERAND_TYPE_ERROR);
+                    }
+                    $this->frame->setVar($instruction->args[0]->value, "bool", $result);
+                    break;
+
+                case "GT":
+                    $a = $this->getSymb($instruction->args[1]);
+                    $b = $this->getSymb($instruction->args[2]);
+                    if ($a->type == "int" && $b->type == "int")
+                    {
+                        if (intval($a->value) > intval($b->value))
+                        {
+                            $result = "true";
+                        }
+                        else
+                        {
+                            $result = "false";
+                        }
+                    }
+                    else if ($a->type == "string" && $b->type == "string")
+                    {
+                        if ($a->value > $b->value)
+                        {
+                            $result = "true";
+                        }
+                        else
+                        {
+                            $result = "false";
+                        }
+                    }
+                    else if ($a->type == "bool" && $b->type == "bool")
+                    {
+                        if ($a->value == "true" && $b->value == "false")
+                        {
+                            $result = "true";
+                        }
+                        else
+                        {
+                            $result = "false";
+                        }
+                    }
+                    else
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $a->value, ReturnCode::OPERAND_TYPE_ERROR);
+                    }
+
+                    $this->frame->setVar($instruction->args[0]->value, "bool", $result);
+                    break;
+
+                case "EQ":
+                    $a = $this->getSymb($instruction->args[1]);
+                    $b = $this->getSymb($instruction->args[2]);
+                    if ($a->type == "string" && $b->type == "string")
+                    {
+                        if ($a->value === $b->value)
+                        {
+                            $result = "true";
+                        }
+                        else
+                        {
+                            $result = "false";
+                        }
+                    }
+                    else if ($a->type == "int" && $b->type == "int")
+                    {
+                        if (intval($a->value) === intval($b->value))
+                        {
+                            $result = "true";
+                        }
+                        else
+                        {
+                            $result = "false";
+                        }
+                    }
+                    else if ($a->type == "bool" && $b->type == "bool")
+                    {
+                        if ($a->value === $b->value)
+                        {
+                            $result = "true";
+                        }
+                        else
+                        {
+                            $result = "false";
+                        }
+                    }
+                    else if ($a->type == "nil" || $b->type == "nil")
+                    {
+                        if ($a->type == "nil" && $b->type == "nil")
+                        {
+                            $result = "true";
+                        }
+                        else
+                        {
+                            $result = "false";
+                        }
+                    }
+                    else
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $a->value, ReturnCode::OPERAND_TYPE_ERROR);
                     }
                     $this->frame->setVar($instruction->args[0]->value, "bool", $result);
                     break;
 
                 case "AND":
-                    $this->frame->setVar($instruction->args[0]->value, "bool", strval(boolval($this->getSymb($instruction->args[1])->value) && boolval($this->getSymb($instruction->args[2])->value)));
+                    if ($this->getSymb($instruction->args[1])->type != "bool" || $this->getSymb($instruction->args[2])->type != "bool")
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                    }
+                    if ($this->getSymb($instruction->args[1])->value == "true" && $this->getSymb($instruction->args[2])->value == "true")
+                    {
+                        $this->frame->setVar($instruction->args[0]->value, "bool", "true");
+                    }
+                    else
+                    {
+                        $this->frame->setVar($instruction->args[0]->value, "bool", "false");
+                    }
                     break;
 
                 case "OR":
-                    $this->frame->setVar($instruction->args[0]->value, "bool", strval(boolval($this->getSymb($instruction->args[1])->value) || boolval($this->getSymb($instruction->args[2])->value)));
+                    if ($this->getSymb($instruction->args[1])->type != "bool" || $this->getSymb($instruction->args[2])->type != "bool")
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                    }
+                    if ($this->getSymb($instruction->args[1])->value == "true" || $this->getSymb($instruction->args[2])->value == "true")
+                    {
+                        $this->frame->setVar($instruction->args[0]->value, "bool", "true");
+                    }
+                    else
+                    {
+                        $this->frame->setVar($instruction->args[0]->value, "bool", "false");
+                    }
                     break;
 
                 case "NOT":
-                    $this->frame->setVar($instruction->args[0]->value, "bool", strval(!boolval($this->getSymb($instruction->args[1])->value)));
+                    if ($this->getSymb($instruction->args[1])->type != "bool")
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                    }
+                    if ($this->getSymb($instruction->args[1])->value == "true")
+                    {
+                        $this->frame->setVar($instruction->args[0]->value, "bool", "false");
+                    }
+                    else
+                    {
+                        $this->frame->setVar($instruction->args[0]->value, "bool", "true");
+                    }
                     break;
 
                 case "INT2CHAR":
+                    if ($this->getSymb($instruction->args[1])->type != "int")
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                    }
+                    if ($this->getSymb($instruction->args[1])->value < 0 || $this->getSymb($instruction->args[1])->value > 255)
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::STRING_OPERATION_ERROR);
+                    }
                     $this->frame->setVar($instruction->args[0]->value, "string", chr(intval($this->getSymb($instruction->args[1])->value)));
                     break;
 
                 case "STRI2INT":
+                    if ($this->getSymb($instruction->args[1])->type != "string" || $this->getSymb($instruction->args[2])->type != "int")
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                    }
+                    if (intval($this->getSymb($instruction->args[2])->value) >= strlen($this->getSymb($instruction->args[1])->value))
+                    {
+                        ErrorHandler::ErrorAndExit("Index out of range", ReturnCode::STRING_OPERATION_ERROR);
+                    }
                     $this->frame->setVar($instruction->args[0]->value, "int", strval(ord($this->getSymb($instruction->args[1])->value[intval($this->getSymb($instruction->args[2])->value)])));
                     break;
 
                 case "READ":
-                    $input = $this->input->readString();
-                    if ($input != "")
+                    if (!in_array($instruction->args[1]->value, ["int", "string", "bool"]))
                     {
-                        $tmp = new Argument();
-                        $tmp->type = $instruction->args[1]->value;
-                        $tmp->value = $input;
-                        $this->getSymb($tmp); // just to check if the input is correct
-                        $this->frame->setVar($instruction->args[0]->value, $instruction->args[1]->value, $input);
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::INVALID_SOURCE_STRUCTURE);
+                    }
+                    switch ($instruction->args[1]->value)
+                    {
+                        case "int":
+                            $input = $this->input->readInt();
+                            break;
+
+                        case "string":
+                            $input = $this->input->readString();
+                            break;
+
+                        case "bool":
+                            $input = $this->input->readBool();
+                            if ($input == true)
+                            {
+                                $input = "true";
+                            }
+                            else if ($input == false)
+                            {
+                                $input = "false";
+                            }
+                            break;
+                    }
+                    if ($input == null)
+                    {
+                        $this->frame->setVar($instruction->args[0]->value, "nil", "nil");
                     }
                     else
                     {
-                        $this->frame->setVar($instruction->args[0]->value, "nil", "nil");
+                        $this->frame->setVar($instruction->args[0]->value, $instruction->args[1]->value, $input);
                     }
                     break;
 
@@ -234,14 +429,30 @@ class Interpreter extends AbstractInterpreter
                     break;
                 
                 case "CONCAT":
+                    if ($this->getSymb($instruction->args[1])->type != "string" || $this->getSymb($instruction->args[2])->type != "string")
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                    }
                     $this->frame->setVar($instruction->args[0]->value, "string", $this->getSymb($instruction->args[1])->value . $this->getSymb($instruction->args[2])->value);
                     break;
 
                 case "STRLEN":
+                    if ($this->getSymb($instruction->args[1])->type != "string")
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                    }
                     $this->frame->setVar($instruction->args[0]->value, "int", strval(strlen($this->getSymb($instruction->args[1])->value)));
                     break;
 
                 case "GETCHAR":
+                    if ($this->getSymb($instruction->args[1])->type != "string")
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                    }
+                    if ($this->getSymb($instruction->args[2])->type != "int")
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[2]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                    }
                     if (intval($this->getSymb($instruction->args[2])->value) >= strlen($this->getSymb($instruction->args[1])->value))
                     {
                         ErrorHandler::ErrorAndExit("Index out of range", ReturnCode::STRING_OPERATION_ERROR);
@@ -250,22 +461,33 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "SETCHAR":
-                    $this->frame->setVar($instruction->args[0]->value, "string", substr_replace($this->getSymb($instruction->args[1])->value, $this->getSymb($instruction->args[2])->value, intval($this->getSymb($instruction->args[3])->value), 1));
+                    $a = $this->getSymb($instruction->args[0]);
+                    $b = $this->getSymb($instruction->args[1]);
+                    $c = $this->getSymb($instruction->args[2]);
+                    if ($a->type != "string" || $b->type != "int" || $c->type != "string")
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[0]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                    }
+                    if ((intval($b->value) >= strlen($a->value)) || intval($b->value) < 0 || $c->value == null)
+                    {
+                        ErrorHandler::ErrorAndExit("Index out of range", ReturnCode::STRING_OPERATION_ERROR);
+                    }
+                    $this->frame->setVar($instruction->args[0]->value, "string", substr_replace($a->value, $c->value, intval($b), 1));
                     break;
 
                 case "TYPE":
                     $symb = $this->getSymb($instruction->args[1]);
                     if ($symb == null)
                     {
-                        $this->frame->setVar($instruction->args[0]->value, "string", "");
+                        $this->frame->setVar($instruction->args[0]->value, "type", "");
                     }
                     else if ($symb->type == "var")
                     {
-                        $this->frame->setVar($instruction->args[0]->value, "string", $this->frame->getVar($symb->value)->type);
+                        $this->frame->setVar($instruction->args[0]->value, "type", $this->frame->getVar($symb->value)->type);
                     }
                     else
                     {
-                        $this->frame->setVar($instruction->args[0]->value, "string", $symb->type);
+                        $this->frame->setVar($instruction->args[0]->value, "type", $symb->type);
                     }
                     break;
 
@@ -277,21 +499,90 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "JUMPIFEQ":
-                    if ($this->getSymb($instruction->args[1])->value == $this->getSymb($instruction->args[2])->value)
+                    $a = $this->getSymb($instruction->args[1]);
+                    $b = $this->getSymb($instruction->args[2]);
+                    if ($a->type == "int" && $b->type == "int")
                     {
-                        $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
+                        if (intval($a->value) == intval($b->value))
+                        {
+                            $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
+                        }
+                    }
+                    else if ($a->type == "string" && $b->type == "string")
+                    {
+                        if ($a->value == $b->value)
+                        {
+                            $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
+                        }
+                    }
+                    else if ($a->type == "bool" && $b->type == "bool")
+                    {
+                        if ($a->value == $b->value)
+                        {
+                            $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
+                        }
+                    }
+                    else if ($a->type == "nil" || $b->type == "nil")
+                    {
+                        if ($a->value == null && $b->value == null)
+                        {
+                            $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
+                        }
+                    }
+                    else
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $a->value, ReturnCode::OPERAND_TYPE_ERROR);
                     }
                     break;
 
                 case "JUMPIFNEQ":
-                    if ($this->getSymb($instruction->args[1])->value != $this->getSymb($instruction->args[2])->value)
+                    $a = $this->getSymb($instruction->args[1]);
+                    $b = $this->getSymb($instruction->args[2]);
+                    if ($a->type == "int" && $b->type == "int")
                     {
-                        $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
+                        if (intval($a->value) != intval($b->value))
+                        {
+                            $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
+                        }
+                    }
+                    else if ($a->type == "string" && $b->type == "string")
+                    {
+                        if ($a->value != $b->value)
+                        {
+                            $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
+                        }
+                    }
+                    else if ($a->type == "bool" && $b->type == "bool")
+                    {
+                        if ($a->value != $b->value)
+                        {
+                            $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
+                        }
+                    }
+                    else if ($a->type == "nil" || $b->type == "nil")
+                    {
+                        if ($a->value != null && $b->value != null)
+                        {
+                            $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
+                        }
+                    }
+                    else
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $a->value, ReturnCode::OPERAND_TYPE_ERROR);
                     }
                     break;
 
                 case "EXIT":
-                    exit(intval($this->getSymb($instruction->args[0])->value));
+                    $exit = $this->getSymb($instruction->args[0]);
+                    if ($exit->type != "int")
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $exit->value, ReturnCode::OPERAND_TYPE_ERROR);
+                    }
+                    if (intval($exit->value) < 0 || intval($exit->value) > 9)
+                    {
+                        ErrorHandler::ErrorAndExit("Wrong operand " . $exit->value, ReturnCode::OPERAND_VALUE_ERROR);
+                    }
+                    exit(intval($exit->value));
 
                 case "DPRINT":
                     $toPrint = $this->getSymb($instruction->args[0]);
@@ -375,6 +666,7 @@ class Interpreter extends AbstractInterpreter
         {
             ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_TYPE_ERROR);
         }
+        return $symb;
     }
 
     private function checkInt(Argument $symb) : void

@@ -106,6 +106,10 @@ class Frame
         $frame = $exploded[0];
         $name = $exploded[1];
         $defined = false;
+        if (!in_array($frame, ["GF", "TF", "LF"]))
+        {
+            ErrorHandler::ErrorAndExit("Wrong var value", ReturnCode::INVALID_SOURCE_STRUCTURE);
+        }
         if ($frame == "GF")
         {
             foreach ($this->GF as $var)
@@ -156,7 +160,7 @@ class Frame
         }
         if (!$defined)
         {
-            ErrorHandler::ErrorAndExit("Variable is not defined", ReturnCode::VALUE_ERROR);
+            ErrorHandler::ErrorAndExit("Variable is not defined", ReturnCode::VARIABLE_ACCESS_ERROR);
         }
     }
 
