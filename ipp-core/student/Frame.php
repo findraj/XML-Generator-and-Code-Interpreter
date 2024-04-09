@@ -59,6 +59,10 @@ class Frame
         $var = new Variable($name);
         if ($frame == "GF")
         {
+            if (in_array($var, $this->GF))
+            {
+                ErrorHandler::ErrorAndExit("Variable already exists", ReturnCode::SEMANTIC_ERROR);
+            }
             $this->GF[] = $var;
         }
         else
@@ -69,6 +73,10 @@ class Frame
                 {
                     ErrorHandler::ErrorAndExit("TF does not exists", ReturnCode::FRAME_ACCESS_ERROR);
                 }
+                if (in_array($var, $this->TF))
+                {
+                    ErrorHandler::ErrorAndExit("Variable already exists", ReturnCode::SEMANTIC_ERROR);
+                }
                 $this->TF[] = $var;
             }
             else
@@ -77,6 +85,10 @@ class Frame
                 if ($top < 0)
                 {
                     ErrorHandler::ErrorAndExit("LF does not exist", ReturnCode::FRAME_ACCESS_ERROR);
+                }
+                if (in_array($var, $this->frameStack[$top]))
+                {
+                    ErrorHandler::ErrorAndExit("Variable already exists", ReturnCode::SEMANTIC_ERROR);
                 }
                 $this->frameStack[$top][] = $var;
             }
