@@ -160,6 +160,7 @@ class Interpreter extends AbstractInterpreter
                 case "LT":
                     $a = $this->getSymb($instruction->args[1]);
                     $b = $this->getSymb($instruction->args[2]);
+                    $result = "false";
                     if ($a->type == "int" && $b->type == "int")
                     {
                         if (intval($a->value) < intval($b->value))
@@ -203,6 +204,7 @@ class Interpreter extends AbstractInterpreter
                 case "GT":
                     $a = $this->getSymb($instruction->args[1]);
                     $b = $this->getSymb($instruction->args[2]);
+                    $result = "false";
                     if ($a->type == "int" && $b->type == "int")
                     {
                         if (intval($a->value) > intval($b->value))
@@ -247,6 +249,7 @@ class Interpreter extends AbstractInterpreter
                 case "EQ":
                     $a = $this->getSymb($instruction->args[1]);
                     $b = $this->getSymb($instruction->args[2]);
+                    $result = "false";
                     if ($a->type == "string" && $b->type == "string")
                     {
                         if ($a->value === $b->value)
@@ -368,6 +371,7 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "READ":
+                    $input = null;
                     if (!in_array($instruction->args[1]->value, ["int", "string", "bool"]))
                     {
                         ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::INVALID_SOURCE_STRUCTURE);
@@ -472,7 +476,7 @@ class Interpreter extends AbstractInterpreter
                     {
                         ErrorHandler::ErrorAndExit("Index out of range", ReturnCode::STRING_OPERATION_ERROR);
                     }
-                    $this->frame->setVar($instruction->args[0]->value, "string", substr_replace($a->value, $c->value, intval($b), 1));
+                    $this->frame->setVar($instruction->args[0]->value, "string", substr_replace($a->value, $c->value, intval($b->value), 1));
                     break;
 
                 case "TYPE":
