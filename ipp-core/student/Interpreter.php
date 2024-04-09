@@ -216,7 +216,19 @@ class Interpreter extends AbstractInterpreter
                     }
                     else
                     {
-                        $this->stdout->writeString($toPrint->value);
+                        if ($toPrint->type == "string")
+                        {
+                            $printable = preg_replace_callback('/\\\(\d{3})/', function($matches)
+                            {
+                                return chr((int)$matches[1]);
+                            },
+                            $toPrint->value);
+                        }
+                        else
+                        {
+                            $printable = $toPrint->value;
+                        }
+                        $this->stdout->writeString($printable);
                     }
                     break;
                 
