@@ -48,7 +48,9 @@ class Instruction
                 ErrorHandler::ErrorAndExit("Wrong argument type", ReturnCode::INVALID_SOURCE_STRUCTURE);
             }
 
-            $argument->value = trim($subElement->firstChild->textContent);
+            if ($subElement->firstChild != null) {
+                $argument->value = trim($subElement->firstChild->textContent);
+            }
 
             $this->args[] = $argument;
             $this->argsCount += 1;

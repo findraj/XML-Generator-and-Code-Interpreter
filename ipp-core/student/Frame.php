@@ -78,7 +78,7 @@ class Frame
                 {
                     ErrorHandler::ErrorAndExit("LF does not exist", ReturnCode::FRAME_ACCESS_ERROR);
                 }
-                $this->frameStack[$top - 1][] = $var;
+                $this->frameStack[$top][] = $var;
             }
         }
     }
@@ -131,7 +131,7 @@ class Frame
                 {
                     ErrorHandler::ErrorAndExit("LF does not exist", ReturnCode::FRAME_ACCESS_ERROR);
                 }
-                foreach ( $this->frameStack[$top - 1] as $var)
+                foreach ( $this->frameStack[$top] as $var)
                 {
                     if ($var->name == $name)
                     {
@@ -144,7 +144,7 @@ class Frame
         }
         if (!$defined)
         {
-            ErrorHandler::ErrorAndExit("Variable is not defined", ReturnCode::FRAME_ACCESS_ERROR);
+            ErrorHandler::ErrorAndExit("Variable is not defined", ReturnCode::VALUE_ERROR);
         }
     }
 
@@ -218,9 +218,9 @@ class Frame
                 }
             }
         }
-        if ($result->value == null)
+        if ($result->value === null)
         {
-            ErrorHandler::ErrorAndExit("Variable is not defined", ReturnCode::OPERAND_VALUE_ERROR);
+            ErrorHandler::ErrorAndExit("Variable is not defined", ReturnCode::VALUE_ERROR);
         }
 
         return $result;

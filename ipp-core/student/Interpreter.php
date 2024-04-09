@@ -74,6 +74,10 @@ class Interpreter extends AbstractInterpreter
             }
             switch ($instruction->name) {
                 case "MOVE":
+                    if ($instruction->args[1]->value == null)
+                    {
+                        $instruction->args[1]->value = '';
+                    }
                     $symb = $this->getSymb($instruction->args[1]);
                     $this->frame->setVar($instruction->args[0]->value, $symb->type, $symb->value);
                     break;
@@ -149,15 +153,23 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "LT":
-                    $this->frame->setVar($instruction->args[0]->value, "bool", strval(intval($this->getSymb($instruction->args[1])->value) < intval($this->getSymb($instruction->args[2])->value)));
+                    $this->frame->setVar($instruction->args[0]->value, "bool", strval($this->getSymb($instruction->args[1])->value < $this->getSymb($instruction->args[2])->value));
                     break;
 
                 case "GT":
-                    $this->frame->setVar($instruction->args[0]->value, "bool", strval(intval($this->getSymb($instruction->args[1])->value) > intval($this->getSymb($instruction->args[2])->value)));
+                    $this->frame->setVar($instruction->args[0]->value, "bool", strval($this->getSymb($instruction->args[1])->value > $this->getSymb($instruction->args[2])->value));
                     break;
 
                 case "EQ":
-                    $this->frame->setVar($instruction->args[0]->value, "bool", strval(intval($this->getSymb($instruction->args[1])->value) == intval($this->getSymb($instruction->args[2])->value)));
+                    if ($this->getSymb($instruction->args[1])->value == $this->getSymb($instruction->args[2])->value)
+                    {
+                        $result = "true";
+                    }
+                    else
+                    {
+                        $result = "false";
+                    }
+                    $this->frame->setVar($instruction->args[0]->value, "bool", $result);
                     break;
 
                 case "AND":
@@ -262,7 +274,6 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "EXIT":
-                    $this->stdout->writeString("EXIT: " . $this->getSymb($instruction->args[0])->value);
                     exit(intval($this->getSymb($instruction->args[0])->value));
 
                 case "DPRINT":
