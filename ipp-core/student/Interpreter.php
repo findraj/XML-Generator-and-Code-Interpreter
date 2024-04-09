@@ -46,6 +46,7 @@ class Interpreter extends AbstractInterpreter
         $instruction = $instructionArray->getNextInstruction();
         while ($instruction != null)
         {
+            $instruction->name = strtoupper($instruction->name);
             if (!array_key_exists($instruction->name, $instructionArray->instructionDictionary))
             {
                 ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::INVALID_SOURCE_STRUCTURE);
@@ -241,6 +242,10 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "GETCHAR":
+                    if (intval($this->getSymb($instruction->args[2])->value) >= strlen($this->getSymb($instruction->args[1])->value))
+                    {
+                        ErrorHandler::ErrorAndExit("Index out of range", ReturnCode::STRING_OPERATION_ERROR);
+                    }
                     $this->frame->setVar($instruction->args[0]->value, "string", $this->getSymb($instruction->args[1])->value[intval($this->getSymb($instruction->args[2])->value)]);
                     break;
 
