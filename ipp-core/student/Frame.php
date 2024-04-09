@@ -151,6 +151,7 @@ class Frame
     public function getVar(string $variable) : Argument
     {
         $result = new Argument();
+        $defined = false;
         $exploded = explode("@", $variable);
         if (count($exploded) != 2)
         {
@@ -172,6 +173,7 @@ class Frame
             {
                 if ($var->name == $name)
                 {
+                    $defined = true;
                     $result->value = $var->value;
                     if ($var->type == null)
                     {
@@ -196,6 +198,7 @@ class Frame
                 {
                     if ($var->name == $name)
                     {
+                        $defined = true;
                         $result->value = $var->value;
                         $result->type = $var->type;
                     }
@@ -212,11 +215,16 @@ class Frame
                 {
                     if ($var->name == $name)
                     {
+                        $defined = true;
                         $result->value = $var->value;
                         $result->type = $var->type;
                     }
                 }
             }
+        }
+        if (!$defined)
+        {
+            ErrorHandler::ErrorAndExit("Variable is not defined", ReturnCode::VARIABLE_ACCESS_ERROR);
         }
         if ($result->value === null)
         {

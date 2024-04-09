@@ -124,6 +124,6 @@ class InstructionArray
                 return $labelObject;
             }
         }
-        return null;
+        ErrorHandler::ErrorAndExit("Label not found", ReturnCode::SEMANTIC_ERROR);
     }
 }
