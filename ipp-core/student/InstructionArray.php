@@ -2,8 +2,6 @@
 
 namespace IPP\Student;
 
-use IPP\Core\ReturnCode;
-
 class InstructionArray
 {
     /** @var array<Instruction> $array */
@@ -105,7 +103,7 @@ class InstructionArray
                 {
                     if ($labelObject->label == $label->label)
                     {
-                        ErrorHandler::ErrorAndExit("Label already exists", ReturnCode::SEMANTIC_ERROR);
+                        throw new SemanticException("Label already exists");
                     }
                 }
                 $this->labelArray[] = $label;
@@ -124,7 +122,6 @@ class InstructionArray
                 return $labelObject;
             }
         }
-        ErrorHandler::ErrorAndExit("Label not found", ReturnCode::SEMANTIC_ERROR);
-        return null;
+        throw new SemanticException("Label not found");
     }
 }

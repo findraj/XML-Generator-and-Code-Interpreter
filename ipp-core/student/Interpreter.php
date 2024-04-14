@@ -3,9 +3,6 @@
 namespace IPP\Student;
 
 use IPP\Core\AbstractInterpreter;
-use IPP\Core\Exception\NotImplementedException;
-use IPP\Core\Exception\XMLException;
-use IPP\Core\ReturnCode;
 use IPP\Student\XMLParser;
 use IPP\Student\Frame;
 
@@ -34,13 +31,6 @@ class Interpreter extends AbstractInterpreter
         $instructionArray->sort();
         $instructionArray->findLabels();
 
-        // $instruction = $instructionArray->getNextInstruction();
-        // while ($instruction != null)
-        // {
-        //     print_r($instruction);
-        //     $instruction = $instructionArray->getNextInstruction();
-        // }
-
         $this->frame = new Frame();
 
         $instruction = $instructionArray->getNextInstruction();
@@ -49,7 +39,7 @@ class Interpreter extends AbstractInterpreter
             $instruction->name = strtoupper($instruction->name);
             if (!array_key_exists($instruction->name, $instructionArray->instructionDictionary))
             {
-                ErrorHandler::ErrorAndExit("Wrong operand", ReturnCode::INVALID_SOURCE_STRUCTURE);
+                throw new InvalidSourceStructureException("Unknown instruction: " . $instruction->name);
             }
             else
             {
@@ -57,7 +47,7 @@ class Interpreter extends AbstractInterpreter
 
                 if (count($params) != count($instruction->args))
                 {
-                    ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->name, ReturnCode::INVALID_SOURCE_STRUCTURE);
+                    throw new InvalidSourceStructureException("Wrong number of arguments " . $instruction->name);
                 }
 
                 $index = 0;
@@ -67,7 +57,7 @@ class Interpreter extends AbstractInterpreter
                     {
                         if ($param != $instruction->args[$index]->type)
                         {
-                            ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->name, ReturnCode::OPERAND_TYPE_ERROR);
+                            throw new OperandTypeException("Wrong operand " . $instruction->args[$index]->value);
                         }
                     }
                 $index += 1;
@@ -108,7 +98,7 @@ class Interpreter extends AbstractInterpreter
                 case "RETURN":
                     if (count($this->positon) == 0)
                     {
-                        ErrorHandler::ErrorAndExit("Stack is empty", ReturnCode::VALUE_ERROR);
+                        throw new ValueException("Stack is empty");
                     }
                     $instructionArray->current = array_pop($this->positon);
                     break;
@@ -120,7 +110,7 @@ class Interpreter extends AbstractInterpreter
                 case "POPS":
                     if (count($this->stack) == 0)
                     {
-                        ErrorHandler::ErrorAndExit("Stack is empty", ReturnCode::VALUE_ERROR);
+                        throw new ValueException("Stack is empty");
                     }
                     else
                     {
@@ -152,7 +142,7 @@ class Interpreter extends AbstractInterpreter
                     $this->checkInt($this->getSymb($instruction->args[2]));
                     if (intval($this->getSymb($instruction->args[2])->value) == 0)
                     {
-                        ErrorHandler::ErrorAndExit("Division by zero", ReturnCode::OPERAND_VALUE_ERROR);
+                        throw new OperandValueException("Division by zero");
                     }
                     $this->frame->setVar($instruction->args[0]->value, "int", strval(intval($this->getSymb($instruction->args[1])->value) / intval($this->getSymb($instruction->args[2])->value)));
                     break;
@@ -196,7 +186,7 @@ class Interpreter extends AbstractInterpreter
                     }
                     else
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $a->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $a->value);
                     }
                     $this->frame->setVar($instruction->args[0]->value, "bool", $result);
                     break;
@@ -240,7 +230,7 @@ class Interpreter extends AbstractInterpreter
                     }
                     else
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $a->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $a->value);
                     }
 
                     $this->frame->setVar($instruction->args[0]->value, "bool", $result);
@@ -296,7 +286,7 @@ class Interpreter extends AbstractInterpreter
                     }
                     else
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $a->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $a->value);
                     }
                     $this->frame->setVar($instruction->args[0]->value, "bool", $result);
                     break;
@@ -304,7 +294,7 @@ class Interpreter extends AbstractInterpreter
                 case "AND":
                     if ($this->getSymb($instruction->args[1])->type != "bool" || $this->getSymb($instruction->args[2])->type != "bool")
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
                     if ($this->getSymb($instruction->args[1])->value == "true" && $this->getSymb($instruction->args[2])->value == "true")
                     {
@@ -319,7 +309,7 @@ class Interpreter extends AbstractInterpreter
                 case "OR":
                     if ($this->getSymb($instruction->args[1])->type != "bool" || $this->getSymb($instruction->args[2])->type != "bool")
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
                     if ($this->getSymb($instruction->args[1])->value == "true" || $this->getSymb($instruction->args[2])->value == "true")
                     {
@@ -334,7 +324,7 @@ class Interpreter extends AbstractInterpreter
                 case "NOT":
                     if ($this->getSymb($instruction->args[1])->type != "bool")
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
                     if ($this->getSymb($instruction->args[1])->value == "true")
                     {
@@ -349,11 +339,11 @@ class Interpreter extends AbstractInterpreter
                 case "INT2CHAR":
                     if ($this->getSymb($instruction->args[1])->type != "int")
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
                     if ($this->getSymb($instruction->args[1])->value < 0 || $this->getSymb($instruction->args[1])->value > 255)
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::STRING_OPERATION_ERROR);
+                        throw new StringOperationException("Wrong operand " . $instruction->args[1]->value);
                     }
                     $this->frame->setVar($instruction->args[0]->value, "string", chr(intval($this->getSymb($instruction->args[1])->value)));
                     break;
@@ -361,11 +351,11 @@ class Interpreter extends AbstractInterpreter
                 case "STRI2INT":
                     if ($this->getSymb($instruction->args[1])->type != "string" || $this->getSymb($instruction->args[2])->type != "int")
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
                     if (intval($this->getSymb($instruction->args[2])->value) >= strlen($this->getSymb($instruction->args[1])->value))
                     {
-                        ErrorHandler::ErrorAndExit("Index out of range", ReturnCode::STRING_OPERATION_ERROR);
+                        throw new StringOperationException("Index out of range");
                     }
                     $this->frame->setVar($instruction->args[0]->value, "int", strval(ord($this->getSymb($instruction->args[1])->value[intval($this->getSymb($instruction->args[2])->value)])));
                     break;
@@ -374,7 +364,7 @@ class Interpreter extends AbstractInterpreter
                     $input = null;
                     if (!in_array($instruction->args[1]->value, ["int", "string", "bool"]))
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::INVALID_SOURCE_STRUCTURE);
+                        throw new InvalidSourceStructureException("Wrong operand " . $instruction->args[1]->value);
                     }
                     switch ($instruction->args[1]->value)
                     {
@@ -435,7 +425,7 @@ class Interpreter extends AbstractInterpreter
                 case "CONCAT":
                     if ($this->getSymb($instruction->args[1])->type != "string" || $this->getSymb($instruction->args[2])->type != "string")
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
                     $this->frame->setVar($instruction->args[0]->value, "string", $this->getSymb($instruction->args[1])->value . $this->getSymb($instruction->args[2])->value);
                     break;
@@ -443,7 +433,7 @@ class Interpreter extends AbstractInterpreter
                 case "STRLEN":
                     if ($this->getSymb($instruction->args[1])->type != "string")
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
                     $this->frame->setVar($instruction->args[0]->value, "int", strval(strlen($this->getSymb($instruction->args[1])->value)));
                     break;
@@ -451,15 +441,15 @@ class Interpreter extends AbstractInterpreter
                 case "GETCHAR":
                     if ($this->getSymb($instruction->args[1])->type != "string")
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[1]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
                     if ($this->getSymb($instruction->args[2])->type != "int")
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[2]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $instruction->args[2]->value);
                     }
                     if (intval($this->getSymb($instruction->args[2])->value) >= strlen($this->getSymb($instruction->args[1])->value))
                     {
-                        ErrorHandler::ErrorAndExit("Index out of range", ReturnCode::STRING_OPERATION_ERROR);
+                        throw new StringOperationException("Index out of range");
                     }
                     $this->frame->setVar($instruction->args[0]->value, "string", $this->getSymb($instruction->args[1])->value[intval($this->getSymb($instruction->args[2])->value)]);
                     break;
@@ -470,11 +460,11 @@ class Interpreter extends AbstractInterpreter
                     $c = $this->getSymb($instruction->args[2]);
                     if ($a->type != "string" || $b->type != "int" || $c->type != "string")
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $instruction->args[0]->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $a->value);
                     }
                     if ((intval($b->value) >= strlen($a->value)) || intval($b->value) < 0 || $c->value == null)
                     {
-                        ErrorHandler::ErrorAndExit("Index out of range", ReturnCode::STRING_OPERATION_ERROR);
+                        throw new StringOperationException("Index out of range");
                     }
                     $this->frame->setVar($instruction->args[0]->value, "string", substr_replace($a->value, $c->value, intval($b->value), 1));
                     break;
@@ -535,7 +525,7 @@ class Interpreter extends AbstractInterpreter
                     }
                     else
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $a->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $a->value);
                     }
                     break;
 
@@ -572,7 +562,7 @@ class Interpreter extends AbstractInterpreter
                     }
                     else
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $a->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $a->value);
                     }
                     break;
 
@@ -580,11 +570,11 @@ class Interpreter extends AbstractInterpreter
                     $exit = $this->getSymb($instruction->args[0]);
                     if ($exit->type != "int")
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $exit->value, ReturnCode::OPERAND_TYPE_ERROR);
+                        throw new OperandTypeException("Wrong operand " . $exit->value);
                     }
                     if (intval($exit->value) < 0 || intval($exit->value) > 9)
                     {
-                        ErrorHandler::ErrorAndExit("Wrong operand " . $exit->value, ReturnCode::OPERAND_VALUE_ERROR);
+                        throw new OperandValueException("Wrong operand " . $exit->value);
                     }
                     exit(intval($exit->value));
 
@@ -606,8 +596,7 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 default:
-                    ErrorHandler::ErrorAndExit("Unknown instruction: " . $instruction->name, ReturnCode::INVALID_SOURCE_STRUCTURE);
-                    break;
+                    throw new InvalidSourceStructureException("Unknown instruction: " . $instruction->name);
             }
 
             $instruction = $instructionArray->getNextInstruction();
@@ -626,7 +615,7 @@ class Interpreter extends AbstractInterpreter
         {
             if (!is_numeric($symb->value))
             {
-                ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::INVALID_SOURCE_STRUCTURE);
+                throw new InvalidSourceStructureException("Wrong operand " . $symb->value);
             }
             return $symb;
         }
@@ -634,7 +623,7 @@ class Interpreter extends AbstractInterpreter
         {
             if (!is_string($symb->value))
             {
-                ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_VALUE_ERROR);
+                throw new OperandValueException("Wrong operand " . $symb->value);
             }
             return $symb;
         }
@@ -642,7 +631,7 @@ class Interpreter extends AbstractInterpreter
         {
             if (!is_bool(boolval($symb->value)))
             {
-                ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_VALUE_ERROR);
+                throw new OperandValueException("Wrong operand " . $symb->value);
             }
             return $symb;
         }
@@ -654,7 +643,7 @@ class Interpreter extends AbstractInterpreter
         {
             if (!in_array($symb->value, ["int", "string", "bool", "nil", "label", "type", "var"]))
             {
-                ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_VALUE_ERROR);
+                throw new OperandValueException("Wrong operand " . $symb->value);
             }
             return $symb;
         }
@@ -662,22 +651,21 @@ class Interpreter extends AbstractInterpreter
         {
             if ($symb->value != "nil")
             {
-                ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_VALUE_ERROR);
+                throw new OperandValueException("Wrong operand " . $symb->value);
             }
             return $symb;
         }
         else
         {
-            ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_TYPE_ERROR);
+            throw new OperandValueException("Wrong operand " . $symb->value);
         }
-        return $symb;
     }
 
     private function checkInt(Argument $symb) : void
     {
         if (!is_numeric($symb->value) || $symb->type != "int")
         {
-            ErrorHandler::ErrorAndExit("Wrong operand " . $symb->value, ReturnCode::OPERAND_TYPE_ERROR);
+            throw new OperandTypeException("Wrong operand " . $symb->value);
         }
     }
 }

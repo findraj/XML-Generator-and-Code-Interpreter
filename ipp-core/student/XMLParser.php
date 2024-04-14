@@ -4,8 +4,6 @@ namespace IPP\Student;
 
 use DOMDocument;
 use DOMElement;
-use IPP\Student\ErrorHandler;
-use IPP\Core\ReturnCode;
 use IPP\Student\InstructionArray;
 
 class XMLParser
@@ -22,26 +20,25 @@ class XMLParser
     {
         if ($root->tagName != "program")
         {
-            ErrorHandler::ErrorAndExit("Wrong root name", ReturnCode::INVALID_SOURCE_STRUCTURE);
-            exit(ReturnCode::INVALID_XML_ERROR);
+            throw new InvalidSourceStructureException("Root element must be program");
         }
 
         $rootAttributeList = ["language", "name", "description"];
         foreach ($root->attributes as $attribute) {
             $attributeName = $attribute->nodeName;
             if (!in_array($attributeName, $rootAttributeList)) {
-                ErrorHandler::ErrorAndExit("Wrong root element attributes", ReturnCode::INVALID_SOURCE_STRUCTURE);
+                throw new InvalidSourceStructureException("Invalid attribute in root element");
             }
         }
 
         $language = $root->getAttribute("language");
         if ($language == "")
         {
-            ErrorHandler::ErrorAndExit("Root element does not contain language attribute", ReturnCode::INVALID_SOURCE_STRUCTURE);
+            throw new InvalidSourceStructureException("Missing attribute language");
         }
         if ($language != "IPPcode24")
         {
-            ErrorHandler::ErrorAndExit("Attribute language has wrong value", ReturnCode::INVALID_SOURCE_STRUCTURE);
+            throw new InvalidSourceStructureException("Invalid attribute language");
         }
     }
 
@@ -54,13 +51,13 @@ class XMLParser
         {
             if ($child->tagName != "instruction")
             {
-                ErrorHandler::ErrorAndExit("Wrong element", ReturnCode::INVALID_SOURCE_STRUCTURE);
+                throw new InvalidSourceStructureException("Invalid element");
             }
 
             $order = $child->getAttribute("order");
             if ($order == "")
             {
-                ErrorHandler::ErrorAndExit("Missing attribute", ReturnCode::INVALID_SOURCE_STRUCTURE);
+                throw new InvalidSourceStructureException("Missing attribute");
             }
 
             $instruction = new Instruction($child);
@@ -68,18 +65,18 @@ class XMLParser
 
             if ($child->getAttribute("opcode") == "")
             {
-                ErrorHandler::ErrorAndExit("Missing attribute", ReturnCode::INVALID_SOURCE_STRUCTURE);
+                throw new InvalidSourceStructureException("Missing attribute opcode");
             }
 
             if (in_array($order, $order_array))
             {
-                ErrorHandler::ErrorAndExit("Attribute order values must be unique", ReturnCode::INVALID_SOURCE_STRUCTURE);
+                throw new InvalidSourceStructureException("Order must be unique");
             }
             $order_array[] = $order;
 
             if (intval($order) < 1)
             {
-                ErrorHandler::ErrorAndExit("Attribute order value must be at least 1", ReturnCode::INVALID_SOURCE_STRUCTURE);
+                throw new InvalidSourceStructureException("Order must be positive integer");
             }
 
             $instructionArray->insertInstruction($instruction);

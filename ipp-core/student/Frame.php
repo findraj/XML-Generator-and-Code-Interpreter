@@ -2,7 +2,6 @@
 
 namespace IPP\Student;
 
-use IPP\Core\ReturnCode;
 use IPP\Student\Argument;
 
 class Frame
@@ -37,7 +36,7 @@ class Frame
         }
         else
         {
-            ErrorHandler::ErrorAndExit("There is no TF to push", ReturnCode::FRAME_ACCESS_ERROR);
+            throw new FrameAccessException("There is no TF to push");
         }
     }
 
@@ -50,7 +49,7 @@ class Frame
         }
         else
         {
-            ErrorHandler::ErrorAndExit("There is nothing in the frame stack to pop", ReturnCode::FRAME_ACCESS_ERROR);
+            throw new FrameAccessException("There is no LF to pop");
         }
     }
 
@@ -61,7 +60,7 @@ class Frame
         {
             if (in_array($var, $this->GF))
             {
-                ErrorHandler::ErrorAndExit("Variable already exists", ReturnCode::SEMANTIC_ERROR);
+                throw new SemanticException("Variable already exists");
             }
             $this->GF[] = $var;
         }
@@ -71,11 +70,11 @@ class Frame
             {
                 if (!$this->TFexist) // check if TF exists
                 {
-                    ErrorHandler::ErrorAndExit("TF does not exists", ReturnCode::FRAME_ACCESS_ERROR);
+                    throw new FrameAccessException("TF does not exists");
                 }
                 if (in_array($var, $this->TF))
                 {
-                    ErrorHandler::ErrorAndExit("Variable already exists", ReturnCode::SEMANTIC_ERROR);
+                    throw new SemanticException("Variable already exists");
                 }
                 $this->TF[] = $var;
             }
@@ -84,11 +83,11 @@ class Frame
                 $top = count($this->frameStack) - 1; // index of the top frame
                 if ($top < 0)
                 {
-                    ErrorHandler::ErrorAndExit("LF does not exist", ReturnCode::FRAME_ACCESS_ERROR);
+                    throw new FrameAccessException("LF does not exist");
                 }
                 if (in_array($var, $this->frameStack[$top]))
                 {
-                    ErrorHandler::ErrorAndExit("Variable already exists", ReturnCode::SEMANTIC_ERROR);
+                    throw new SemanticException("Variable already exists");
                 }
                 $this->frameStack[$top][] = $var;
             }
@@ -100,7 +99,7 @@ class Frame
         $exploded = explode("@", $variable);
         if (count($exploded) != 2)
         {
-            ErrorHandler::ErrorAndExit("Wrong var value", ReturnCode::OPERAND_VALUE_ERROR);
+            throw new OperandValueException("Wrong var value");
         }
 
         $frame = $exploded[0];
@@ -108,7 +107,7 @@ class Frame
         $defined = false;
         if (!in_array($frame, ["GF", "TF", "LF"]))
         {
-            ErrorHandler::ErrorAndExit("Wrong var value", ReturnCode::INVALID_SOURCE_STRUCTURE);
+            throw new InvalidSourceStructureException("Wrong var value");
         }
         if ($frame == "GF")
         {
@@ -128,7 +127,7 @@ class Frame
             {
                 if (!$this->TFexist) // check if TF exists
                 {
-                    ErrorHandler::ErrorAndExit("TF does not exists", ReturnCode::FRAME_ACCESS_ERROR);
+                    throw new FrameAccessException("TF does not exists");
                 }
                 foreach ($this->TF as $var)
                 {
@@ -145,7 +144,7 @@ class Frame
                 $top = count($this->frameStack) - 1; // index of the top frame
                 if ($top < 0)
                 {
-                    ErrorHandler::ErrorAndExit("LF does not exist", ReturnCode::FRAME_ACCESS_ERROR);
+                    throw new FrameAccessException("LF does not exist");
                 }
                 foreach ( $this->frameStack[$top] as $var)
                 {
@@ -160,7 +159,7 @@ class Frame
         }
         if (!$defined)
         {
-            ErrorHandler::ErrorAndExit("Variable is not defined", ReturnCode::VARIABLE_ACCESS_ERROR);
+            throw new VariableAccessException("Variable is not defined");
         }
     }
 
@@ -171,7 +170,7 @@ class Frame
         $exploded = explode("@", $variable);
         if (count($exploded) != 2)
         {
-            ErrorHandler::ErrorAndExit("Wrong var value", ReturnCode::OPERAND_VALUE_ERROR);
+            throw new OperandValueException("Wrong var value");
         }
 
         $frame = $exploded[0];
@@ -180,7 +179,7 @@ class Frame
 
         if (!in_array($frame, ["GF", "TF", "LF"]))
         {
-            ErrorHandler::ErrorAndExit("Wrong var value", ReturnCode::OPERAND_VALUE_ERROR);
+            throw new OperandValueException("Wrong var value");
         }
 
         if ($frame == "GF")
@@ -208,7 +207,7 @@ class Frame
             {
                 if (!$this->TFexist) // check if TF exists
                 {
-                    ErrorHandler::ErrorAndExit("TF does not exists", ReturnCode::FRAME_ACCESS_ERROR);
+                    throw new FrameAccessException("TF does not exists");
                 }
                 foreach ($this->TF as $var)
                 {
@@ -225,7 +224,7 @@ class Frame
                 $top = count($this->frameStack) - 1; // index of the top frame
                 if ($top < 0)
                 {
-                    ErrorHandler::ErrorAndExit("LF does not exist", ReturnCode::FRAME_ACCESS_ERROR);
+                    throw new FrameAccessException("LF does not exist");
                 }
                 foreach ( $this->frameStack[$top] as $var)
                 {
@@ -240,11 +239,11 @@ class Frame
         }
         if (!$defined)
         {
-            ErrorHandler::ErrorAndExit("Variable is not defined", ReturnCode::VARIABLE_ACCESS_ERROR);
+            throw new VariableAccessException("Variable is not defined");
         }
         if ($result->value === null)
         {
-            ErrorHandler::ErrorAndExit("Variable is not defined", ReturnCode::VALUE_ERROR);
+            throw new ValueException("Variable has no value");
         }
 
         return $result;

@@ -3,7 +3,6 @@
 namespace IPP\Student;
 
 use DOMElement;
-use IPP\Core\ReturnCode;
 use IPP\Student\Argument;
 
 class Instruction
@@ -27,13 +26,13 @@ class Instruction
 
             $subElement_tag = $subElement->tagName;
             if (!preg_match("/arg[0-3]/i", $subElement_tag)) {
-                ErrorHandler::ErrorAndExit("Wrong argument format", ReturnCode::INVALID_SOURCE_STRUCTURE);
+                throw new InvalidSourceStructureException("Invalid element");
             }
             $argOrder = preg_replace('/\D/', '', $subElement_tag);
             $argument->order = intval($argOrder);
 
             if (in_array($subElement_tag, $subElement_array)) {
-                ErrorHandler::ErrorAndExit("Argument numbers must be unique", ReturnCode::INVALID_SOURCE_STRUCTURE);
+                throw new InvalidSourceStructureException("Invalid element");
             }
             $subElement_array[] = $subElement_tag;
 
@@ -41,11 +40,11 @@ class Instruction
             $argument->type = $type;
 
             if ($type == "") {
-                ErrorHandler::ErrorAndExit("Argument must have attribute type", ReturnCode::INVALID_SOURCE_STRUCTURE);
+                throw new InvalidSourceStructureException("Missing attribute");
             }
 
             if (!in_array($type, ['string', 'int', 'bool', 'label', 'type', 'nil', 'var'])) {
-                ErrorHandler::ErrorAndExit("Wrong argument type", ReturnCode::INVALID_SOURCE_STRUCTURE);
+                throw new InvalidSourceStructureException("Invalid attribute");
             }
 
             if ($subElement->firstChild != null) {
@@ -59,7 +58,7 @@ class Instruction
         $this->sort();
         if (count($this->args) != 0 && count($this->args) != $this->args[count($this->args) - 1]->order)
         {
-            ErrorHandler::ErrorAndExit("Wrong argument type", ReturnCode::INVALID_SOURCE_STRUCTURE);
+            throw new InvalidSourceStructureException("Invalid element");
         }
     }
 
