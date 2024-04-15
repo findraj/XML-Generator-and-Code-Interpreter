@@ -1,7 +1,13 @@
 <?php
+/**
+ * @author Jan Findra (xfindr01)
+ */
 
 namespace IPP\Student;
 
+/**
+ * Class InstructionArray represents an array of instructions in the IPPcode24 language.
+ */
 class InstructionArray
 {
     /** @var array<Instruction> $array */
@@ -10,7 +16,9 @@ class InstructionArray
     public array $labelArray;
     /** @var array<array<string>> $instructionDictionary */
     public array $instructionDictionary;
+    /** @var int $instructionCounter */
     public int $instructionCounter;
+    /** @var int $current */
     public int $current;
 
     public function __construct()
@@ -58,12 +66,20 @@ class InstructionArray
         
     }
 
+    /**
+     * Inserts an instruction into the array.
+     * @param Instruction $instruction Instruction to be inserted.
+     */
     public function insertInstruction(Instruction $instruction) : void
     {
         $this->instructionCounter += 1;
         $this->array[] = $instruction;
     }
 
+    /**
+     * Returns the next instruction in the array.
+     * @return Instruction|null Next instruction in the array.
+     */
     public function getNextInstruction() : ?Instruction
     {
         $this->current += 1;
@@ -77,24 +93,37 @@ class InstructionArray
         }
     }
 
+    /**
+     * Compares two instructions by their order.
+     * @param Instruction $a First instruction.
+     * @param Instruction $b Second instruction.
+     * @return int -1 if a < b, 0 if a = b, 1 if a > b.
+     */
     private function compareByOrder(Instruction $a, Instruction $b) : int
     {
-        if ($a->order == $b->order) {
+        if ($a->order == $b->order)
+        {
             return 0;
         }
         return ($a->order < $b->order) ? -1 : 1;
     }
 
+    /**
+     * Sorts the instructions by their order.
+     */
     public function sort() : void
     {
         usort($this->array, array($this, 'compareByOrder'));
     }
 
+    /**
+     * Finds all labels in the array and stores them in the labelArray.
+     */
     public function findLabels() : void
     {
         $this->labelArray = array();
         $instruction = $this->getNextInstruction();
-        while ($instruction != null)
+        while ($instruction != null) // find all labels
         {
             if ($instruction->name == "LABEL")
             {
@@ -113,11 +142,16 @@ class InstructionArray
         $this->current = 0;
     }
 
+    /**
+     * Returns a label object by its label.
+     * @param string $label Label to be found.
+     * @return Label|null Label object.
+     */
     public function getLabel(string $label) : ?Label
     {
-        foreach ($this->labelArray as $labelObject)
+        foreach ($this->labelArray as $labelObject) // go through all labels
         {
-            if ($labelObject->label == $label)
+            if ($labelObject->label == $label) // find the label
             {
                 return $labelObject;
             }

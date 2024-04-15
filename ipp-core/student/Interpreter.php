@@ -8,6 +8,7 @@ use IPP\Student\Frame;
 
 class Interpreter extends AbstractInterpreter
 {
+    /** @var Frame $frame */
     private Frame $frame;
     /** @var array<Argument> $stack */
     private array $stack = array();
@@ -16,15 +17,6 @@ class Interpreter extends AbstractInterpreter
 
     public function execute(): int
     {
-        // TODO: Start your code here
-        // php interpret.php --source=./student/supplementary-test/interpret/read_test.src --input=./student/supplementary-test/interpret/read_test.in
-        // Check \IPP\Core\AbstractInterpreter for predefined I/O objects:
-        // $val = $this->input->readString();
-        // $this->stdout->writeString($val);
-        // $this->stdout->writeString("stdout");
-        // $this->stderr->writeString("stderr");
-        // throw new NotImplementedException;
-
         $dom = $this->source->getDOMDocument();
         $XMLparser = new XMLParser($dom);
         $instructionArray = $XMLparser->checkInstructions();
@@ -34,10 +26,10 @@ class Interpreter extends AbstractInterpreter
         $this->frame = new Frame();
 
         $instruction = $instructionArray->getNextInstruction();
-        while ($instruction != null)
+        while ($instruction != null) // go through all instructions
         {
             $instruction->name = strtoupper($instruction->name);
-            if (!array_key_exists($instruction->name, $instructionArray->instructionDictionary))
+            if (!array_key_exists($instruction->name, $instructionArray->instructionDictionary)) // check if the instruction exists
             {
                 throw new InvalidSourceStructureException("Unknown instruction: " . $instruction->name);
             }
@@ -45,13 +37,13 @@ class Interpreter extends AbstractInterpreter
             {
                 $params = $instructionArray->instructionDictionary[$instruction->name];
 
-                if (count($params) != count($instruction->args))
+                if (count($params) != count($instruction->args)) // check if the number of arguments is correct
                 {
                     throw new InvalidSourceStructureException("Wrong number of arguments " . $instruction->name);
                 }
 
                 $index = 0;
-                foreach ($params as $param)
+                foreach ($params as $param) // check if the type of arguments is correct
                 {
                     if ($param != "symb" && $instruction->args[$index]->type != "var")
                     {
@@ -63,11 +55,12 @@ class Interpreter extends AbstractInterpreter
                 $index += 1;
                 }
             }
-            switch ($instruction->name) {
+            switch ($instruction->name) // execute the instruction
+            {
                 case "MOVE":
-                    if ($instruction->args[1]->value == null)
+                    if ($instruction->args[1]->value == null) // if the value is empty
                     {
-                        $instruction->args[1]->value = '';
+                        $instruction->args[1]->value = ''; // set it to an empty string
                     }
                     $symb = $this->getSymb($instruction->args[1]);
                     $this->frame->setVar($instruction->args[0]->value, $symb->type, $symb->value);
@@ -96,7 +89,7 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "RETURN":
-                    if (count($this->positon) == 0)
+                    if (count($this->positon) == 0) // if the stack is empty
                     {
                         throw new ValueException("Stack is empty");
                     }
@@ -108,7 +101,7 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "POPS":
-                    if (count($this->stack) == 0)
+                    if (count($this->stack) == 0) // if the stack is empty
                     {
                         throw new ValueException("Stack is empty");
                     }
@@ -140,7 +133,7 @@ class Interpreter extends AbstractInterpreter
                 case "IDIV":
                     $this->checkInt($this->getSymb($instruction->args[1]));
                     $this->checkInt($this->getSymb($instruction->args[2]));
-                    if (intval($this->getSymb($instruction->args[2])->value) == 0)
+                    if (intval($this->getSymb($instruction->args[2])->value) == 0) // if the divisor is 0
                     {
                         throw new OperandValueException("Division by zero");
                     }
@@ -151,7 +144,7 @@ class Interpreter extends AbstractInterpreter
                     $a = $this->getSymb($instruction->args[1]);
                     $b = $this->getSymb($instruction->args[2]);
                     $result = "false";
-                    if ($a->type == "int" && $b->type == "int")
+                    if ($a->type == "int" && $b->type == "int") // if both operands are integers
                     {
                         if (intval($a->value) < intval($b->value))
                         {
@@ -162,7 +155,7 @@ class Interpreter extends AbstractInterpreter
                             $result = "false";
                         }
                     }
-                    else if ($a->type == "string" && $b->type == "string")
+                    else if ($a->type == "string" && $b->type == "string") // if both operands are strings
                     {
                         if ($a->value < $b->value)
                         {
@@ -173,7 +166,7 @@ class Interpreter extends AbstractInterpreter
                             $result = "false";
                         }
                     }
-                    else if ($a->type == "bool" && $b->type == "bool")
+                    else if ($a->type == "bool" && $b->type == "bool") // if both operands are boolean
                     {
                         if ($a->value == "false" && $b->value == "true")
                         {
@@ -195,7 +188,7 @@ class Interpreter extends AbstractInterpreter
                     $a = $this->getSymb($instruction->args[1]);
                     $b = $this->getSymb($instruction->args[2]);
                     $result = "false";
-                    if ($a->type == "int" && $b->type == "int")
+                    if ($a->type == "int" && $b->type == "int") // if both operands are integers
                     {
                         if (intval($a->value) > intval($b->value))
                         {
@@ -206,7 +199,7 @@ class Interpreter extends AbstractInterpreter
                             $result = "false";
                         }
                     }
-                    else if ($a->type == "string" && $b->type == "string")
+                    else if ($a->type == "string" && $b->type == "string") // if both operands are strings
                     {
                         if ($a->value > $b->value)
                         {
@@ -217,13 +210,13 @@ class Interpreter extends AbstractInterpreter
                             $result = "false";
                         }
                     }
-                    else if ($a->type == "bool" && $b->type == "bool")
+                    else if ($a->type == "bool" && $b->type == "bool") // if both operands are boolean
                     {
-                        if ($a->value == "true" && $b->value == "false")
+                        if ($a->value == "true" && $b->value == "false") // true > false
                         {
                             $result = "true";
                         }
-                        else
+                        else // false < true
                         {
                             $result = "false";
                         }
@@ -240,7 +233,7 @@ class Interpreter extends AbstractInterpreter
                     $a = $this->getSymb($instruction->args[1]);
                     $b = $this->getSymb($instruction->args[2]);
                     $result = "false";
-                    if ($a->type == "string" && $b->type == "string")
+                    if ($a->type == "string" && $b->type == "string") // if both operands are strings
                     {
                         if ($a->value === $b->value)
                         {
@@ -251,7 +244,7 @@ class Interpreter extends AbstractInterpreter
                             $result = "false";
                         }
                     }
-                    else if ($a->type == "int" && $b->type == "int")
+                    else if ($a->type == "int" && $b->type == "int") // if both operands are integers
                     {
                         if (intval($a->value) === intval($b->value))
                         {
@@ -262,7 +255,7 @@ class Interpreter extends AbstractInterpreter
                             $result = "false";
                         }
                     }
-                    else if ($a->type == "bool" && $b->type == "bool")
+                    else if ($a->type == "bool" && $b->type == "bool") // if both operands are boolean
                     {
                         if ($a->value === $b->value)
                         {
@@ -273,9 +266,9 @@ class Interpreter extends AbstractInterpreter
                             $result = "false";
                         }
                     }
-                    else if ($a->type == "nil" || $b->type == "nil")
+                    else if ($a->type == "nil" || $b->type == "nil") // if one of the operands is nil
                     {
-                        if ($a->type == "nil" && $b->type == "nil")
+                        if ($a->type == "nil" && $b->type == "nil") // both operand are nil => true
                         {
                             $result = "true";
                         }
@@ -292,56 +285,56 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "AND":
-                    if ($this->getSymb($instruction->args[1])->type != "bool" || $this->getSymb($instruction->args[2])->type != "bool")
+                    if ($this->getSymb($instruction->args[1])->type != "bool" || $this->getSymb($instruction->args[2])->type != "bool") // if the operands are not boolean
                     {
                         throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
-                    if ($this->getSymb($instruction->args[1])->value == "true" && $this->getSymb($instruction->args[2])->value == "true")
+                    if ($this->getSymb($instruction->args[1])->value == "true" && $this->getSymb($instruction->args[2])->value == "true") // if both operands are true
                     {
                         $this->frame->setVar($instruction->args[0]->value, "bool", "true");
                     }
-                    else
+                    else // if at least one of the operands is false
                     {
                         $this->frame->setVar($instruction->args[0]->value, "bool", "false");
                     }
                     break;
 
                 case "OR":
-                    if ($this->getSymb($instruction->args[1])->type != "bool" || $this->getSymb($instruction->args[2])->type != "bool")
+                    if ($this->getSymb($instruction->args[1])->type != "bool" || $this->getSymb($instruction->args[2])->type != "bool") // if the operands are not boolean
                     {
                         throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
-                    if ($this->getSymb($instruction->args[1])->value == "true" || $this->getSymb($instruction->args[2])->value == "true")
+                    if ($this->getSymb($instruction->args[1])->value == "true" || $this->getSymb($instruction->args[2])->value == "true") // if at least one of the operands is true
                     {
                         $this->frame->setVar($instruction->args[0]->value, "bool", "true");
                     }
-                    else
+                    else // if both operands are false
                     {
                         $this->frame->setVar($instruction->args[0]->value, "bool", "false");
                     }
                     break;
 
                 case "NOT":
-                    if ($this->getSymb($instruction->args[1])->type != "bool")
+                    if ($this->getSymb($instruction->args[1])->type != "bool") // if the operand is not boolean
                     {
                         throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
-                    if ($this->getSymb($instruction->args[1])->value == "true")
+                    if ($this->getSymb($instruction->args[1])->value == "true") // if the operand is true
                     {
                         $this->frame->setVar($instruction->args[0]->value, "bool", "false");
                     }
-                    else
+                    else // if the operand is false
                     {
                         $this->frame->setVar($instruction->args[0]->value, "bool", "true");
                     }
                     break;
 
                 case "INT2CHAR":
-                    if ($this->getSymb($instruction->args[1])->type != "int")
+                    if ($this->getSymb($instruction->args[1])->type != "int") // if the operand is not integer
                     {
                         throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
-                    if ($this->getSymb($instruction->args[1])->value < 0 || $this->getSymb($instruction->args[1])->value > 255)
+                    if ($this->getSymb($instruction->args[1])->value < 0 || $this->getSymb($instruction->args[1])->value > 255) // if the integer is out of range
                     {
                         throw new StringOperationException("Wrong operand " . $instruction->args[1]->value);
                     }
@@ -349,11 +342,11 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "STRI2INT":
-                    if ($this->getSymb($instruction->args[1])->type != "string" || $this->getSymb($instruction->args[2])->type != "int")
+                    if ($this->getSymb($instruction->args[1])->type != "string" || $this->getSymb($instruction->args[2])->type != "int") // if the first operand is not string or the second operand is not integer
                     {
                         throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
-                    if (intval($this->getSymb($instruction->args[2])->value) >= strlen($this->getSymb($instruction->args[1])->value))
+                    if (intval($this->getSymb($instruction->args[2])->value) >= strlen($this->getSymb($instruction->args[1])->value)) // if the index is out of range
                     {
                         throw new StringOperationException("Index out of range");
                     }
@@ -362,11 +355,11 @@ class Interpreter extends AbstractInterpreter
 
                 case "READ":
                     $input = null;
-                    if (!in_array($instruction->args[1]->value, ["int", "string", "bool"]))
+                    if (!in_array($instruction->args[1]->value, ["int", "string", "bool"])) // check if the type is correct
                     {
                         throw new InvalidSourceStructureException("Wrong operand " . $instruction->args[1]->value);
                     }
-                    switch ($instruction->args[1]->value)
+                    switch ($instruction->args[1]->value) // read the input
                     {
                         case "int":
                             $input = $this->input->readInt();
@@ -378,17 +371,17 @@ class Interpreter extends AbstractInterpreter
 
                         case "bool":
                             $input = $this->input->readBool();
-                            if ($input == true)
+                            if ($input == true) // convert the input to string
                             {
                                 $input = "true";
                             }
-                            else if ($input == false)
+                            else if ($input == false) // convert the input to string
                             {
                                 $input = "false";
                             }
                             break;
                     }
-                    if ($input == null)
+                    if ($input == null) // if the input is empty
                     {
                         $this->frame->setVar($instruction->args[0]->value, "nil", "nil");
                     }
@@ -400,15 +393,15 @@ class Interpreter extends AbstractInterpreter
 
                 case "WRITE":
                     $toPrint = $this->getSymb($instruction->args[0]);
-                    if ($toPrint->type == "nil")
+                    if ($toPrint->type == "nil") // if the operand is nil
                     {
                         $this->stdout->writeString("");
                     }
                     else
                     {
-                        if ($toPrint->type == "string")
+                        if ($toPrint->type == "string") // if the operand is string
                         {
-                            $printable = preg_replace_callback('/\\\(\d{3})/', function($matches)
+                            $printable = preg_replace_callback('/\\\(\d{3})/', function($matches) // convert the escape sequences
                             {
                                 return chr((int)$matches[1]);
                             },
@@ -423,7 +416,7 @@ class Interpreter extends AbstractInterpreter
                     break;
                 
                 case "CONCAT":
-                    if ($this->getSymb($instruction->args[1])->type != "string" || $this->getSymb($instruction->args[2])->type != "string")
+                    if ($this->getSymb($instruction->args[1])->type != "string" || $this->getSymb($instruction->args[2])->type != "string") // if the operands are not strings
                     {
                         throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
@@ -431,7 +424,7 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "STRLEN":
-                    if ($this->getSymb($instruction->args[1])->type != "string")
+                    if ($this->getSymb($instruction->args[1])->type != "string") // if the operand is not string
                     {
                         throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
@@ -439,15 +432,15 @@ class Interpreter extends AbstractInterpreter
                     break;
 
                 case "GETCHAR":
-                    if ($this->getSymb($instruction->args[1])->type != "string")
+                    if ($this->getSymb($instruction->args[1])->type != "string") // if the first operand is not string
                     {
                         throw new OperandTypeException("Wrong operand " . $instruction->args[1]->value);
                     }
-                    if ($this->getSymb($instruction->args[2])->type != "int")
+                    if ($this->getSymb($instruction->args[2])->type != "int") // if the second operand is not integer
                     {
                         throw new OperandTypeException("Wrong operand " . $instruction->args[2]->value);
                     }
-                    if (intval($this->getSymb($instruction->args[2])->value) >= strlen($this->getSymb($instruction->args[1])->value))
+                    if (intval($this->getSymb($instruction->args[2])->value) >= strlen($this->getSymb($instruction->args[1])->value)) // if the index is out of range
                     {
                         throw new StringOperationException("Index out of range");
                     }
@@ -458,11 +451,11 @@ class Interpreter extends AbstractInterpreter
                     $a = $this->getSymb($instruction->args[0]);
                     $b = $this->getSymb($instruction->args[1]);
                     $c = $this->getSymb($instruction->args[2]);
-                    if ($a->type != "string" || $b->type != "int" || $c->type != "string")
+                    if ($a->type != "string" || $b->type != "int" || $c->type != "string") // check if the types are correct
                     {
                         throw new OperandTypeException("Wrong operand " . $a->value);
                     }
-                    if ((intval($b->value) >= strlen($a->value)) || intval($b->value) < 0 || $c->value == null)
+                    if ((intval($b->value) >= strlen($a->value)) || intval($b->value) < 0 || $c->value == null) // if the index is out of range
                     {
                         throw new StringOperationException("Index out of range");
                     }
@@ -471,15 +464,15 @@ class Interpreter extends AbstractInterpreter
 
                 case "TYPE":
                     $symb = $this->getSymb($instruction->args[1]);
-                    if ($symb == null)
+                    if ($symb == null) // if the operand is empty
                     {
                         $this->frame->setVar($instruction->args[0]->value, "type", "");
                     }
-                    else if ($symb->type == "var")
+                    else if ($symb->type == "var") // if the operand is a variable
                     {
                         $this->frame->setVar($instruction->args[0]->value, "type", $this->frame->getVar($symb->value)->type);
                     }
-                    else
+                    else // if the operand is a constant
                     {
                         $this->frame->setVar($instruction->args[0]->value, "type", $symb->type);
                     }
@@ -495,28 +488,28 @@ class Interpreter extends AbstractInterpreter
                 case "JUMPIFEQ":
                     $a = $this->getSymb($instruction->args[1]);
                     $b = $this->getSymb($instruction->args[2]);
-                    if ($a->type == "int" && $b->type == "int")
+                    if ($a->type == "int" && $b->type == "int") // if both operands are integers
                     {
                         if (intval($a->value) == intval($b->value))
                         {
                             $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
                         }
                     }
-                    else if ($a->type == "string" && $b->type == "string")
+                    else if ($a->type == "string" && $b->type == "string") // if both operands are strings
                     {
                         if ($a->value == $b->value)
                         {
                             $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
                         }
                     }
-                    else if ($a->type == "bool" && $b->type == "bool")
+                    else if ($a->type == "bool" && $b->type == "bool") // if both operands are boolean
                     {
                         if ($a->value == $b->value)
                         {
                             $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
                         }
                     }
-                    else if ($a->type == "nil" || $b->type == "nil")
+                    else if ($a->type == "nil" || $b->type == "nil") // if one of the operands is nil
                     {
                         if ($a->value == null && $b->value == null)
                         {
@@ -532,28 +525,28 @@ class Interpreter extends AbstractInterpreter
                 case "JUMPIFNEQ":
                     $a = $this->getSymb($instruction->args[1]);
                     $b = $this->getSymb($instruction->args[2]);
-                    if ($a->type == "int" && $b->type == "int")
+                    if ($a->type == "int" && $b->type == "int") // if both operands are integers
                     {
                         if (intval($a->value) != intval($b->value))
                         {
                             $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
                         }
                     }
-                    else if ($a->type == "string" && $b->type == "string")
+                    else if ($a->type == "string" && $b->type == "string") // if both operands are strings
                     {
                         if ($a->value != $b->value)
                         {
                             $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
                         }
                     }
-                    else if ($a->type == "bool" && $b->type == "bool")
+                    else if ($a->type == "bool" && $b->type == "bool") // if both operands are boolean
                     {
                         if ($a->value != $b->value)
                         {
                             $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
                         }
                     }
-                    else if ($a->type == "nil" || $b->type == "nil")
+                    else if ($a->type == "nil" || $b->type == "nil") // if one of the operands is nil
                     {
                         if ($a->value != null && $b->value != null)
                         {
@@ -568,11 +561,11 @@ class Interpreter extends AbstractInterpreter
 
                 case "EXIT":
                     $exit = $this->getSymb($instruction->args[0]);
-                    if ($exit->type != "int")
+                    if ($exit->type != "int") // if the operand is not integer
                     {
                         throw new OperandTypeException("Wrong operand " . $exit->value);
                     }
-                    if (intval($exit->value) < 0 || intval($exit->value) > 9)
+                    if (intval($exit->value) < 0 || intval($exit->value) > 9) // if the exit code is out of range
                     {
                         throw new OperandValueException("Wrong operand " . $exit->value);
                     }
@@ -580,7 +573,7 @@ class Interpreter extends AbstractInterpreter
 
                 case "DPRINT":
                     $toPrint = $this->getSymb($instruction->args[0]);
-                    if ($toPrint->type == "nil")
+                    if ($toPrint->type == "nil") // if the operand is nil
                     {
                         $this->stderr->writeString("");
                     }
@@ -605,13 +598,18 @@ class Interpreter extends AbstractInterpreter
         return 0;
     }
 
+    /**
+     * Returns the value of the operand and also check if the operand is correct.
+     * @param Argument $symb Operand to be checked.
+     * @return Argument Operand.
+     */
     public function getSymb(Argument $symb) : Argument
     {
-        if ($symb->type == "var")
+        if ($symb->type == "var") // if the operand is a variable
         {
             return $this->frame->getVar($symb->value);
         }
-        else if ($symb->type == "int")
+        else if ($symb->type == "int") // if the operand is an integer
         {
             if (!is_numeric($symb->value))
             {
@@ -619,7 +617,7 @@ class Interpreter extends AbstractInterpreter
             }
             return $symb;
         }
-        else if ($symb->type == "string")
+        else if ($symb->type == "string") // if the operand is a string
         {
             if (!is_string($symb->value))
             {
@@ -627,7 +625,7 @@ class Interpreter extends AbstractInterpreter
             }
             return $symb;
         }
-        else if ($symb->type == "bool")
+        else if ($symb->type == "bool") // if the operand is a bool
         {
             if (!is_bool(boolval($symb->value)))
             {
@@ -635,11 +633,11 @@ class Interpreter extends AbstractInterpreter
             }
             return $symb;
         }
-        else if ($symb->type == "label")
+        else if ($symb->type == "label") // if the operand is a label
         {
             return $symb;
         }
-        else if ($symb->type == "type")
+        else if ($symb->type == "type") // if the operand is a type
         {
             if (!in_array($symb->value, ["int", "string", "bool", "nil", "label", "type", "var"]))
             {
@@ -647,7 +645,7 @@ class Interpreter extends AbstractInterpreter
             }
             return $symb;
         }
-        else if ($symb->type == "nil")
+        else if ($symb->type == "nil") // if the operand is nil
         {
             if ($symb->value != "nil")
             {
@@ -661,6 +659,10 @@ class Interpreter extends AbstractInterpreter
         }
     }
 
+    /**
+     * Checks if the integer operand is correct.
+     * @param Argument $symb Operand to be checked.
+     */
     private function checkInt(Argument $symb) : void
     {
         if (!is_numeric($symb->value) || $symb->type != "int")

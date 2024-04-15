@@ -1,4 +1,7 @@
 <?php
+/**
+ * @author Jan Findra (xfindr01)
+ */
 
 namespace IPP\Student;
 
@@ -7,7 +10,7 @@ use IPP\Core\ReturnCode;
 use Throwable;
 
 /**
- * Exception for source structure errors
+ * Exception for semantic error
  */
 class SemanticException extends IPPException
 {
