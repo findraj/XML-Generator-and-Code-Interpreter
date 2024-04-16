@@ -155,7 +155,7 @@ class Interpreter extends AbstractInterpreter
                             $result = "false";
                         }
                     }
-                    else if ($a->type == "string" && $b->type == "string") // if both operands are strings
+                    else if ($this->getType($a) == "string" && $this->getType($b) == "string") // if both operands are strings
                     {
                         if ($a->value < $b->value)
                         {
@@ -199,7 +199,7 @@ class Interpreter extends AbstractInterpreter
                             $result = "false";
                         }
                     }
-                    else if ($a->type == "string" && $b->type == "string") // if both operands are strings
+                    else if ($this->getType($a) == "string" && $this->getType($b) == "string") // if both operands are strings
                     {
                         if ($a->value > $b->value)
                         {
@@ -233,7 +233,7 @@ class Interpreter extends AbstractInterpreter
                     $a = $this->getSymb($instruction->args[1]);
                     $b = $this->getSymb($instruction->args[2]);
                     $result = "false";
-                    if ($a->type == "string" && $b->type == "string") // if both operands are strings
+                    if ($this->getType($a) == "string" && $this->getType($b) == "string") // if both operands are strings
                     {
                         if ($a->value === $b->value)
                         {
@@ -477,7 +477,7 @@ class Interpreter extends AbstractInterpreter
                     }
                     else // if the operand is a constant
                     {
-                        $this->frame->setVar($instruction->args[0]->value, "type", $symb->type);
+                        $this->frame->setVar($instruction->args[0]->value, "type", $this->getType($symb));
                     }
                     break;
 
@@ -498,7 +498,7 @@ class Interpreter extends AbstractInterpreter
                             $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
                         }
                     }
-                    else if ($a->type == "string" && $b->type == "string") // if both operands are strings
+                    else if ($this->getType($a) == "string" && $this->getType($b) == "string") // if both operands are strings
                     {
                         if ($a->value == $b->value)
                         {
@@ -521,7 +521,7 @@ class Interpreter extends AbstractInterpreter
                     }
                     else
                     {
-                        throw new OperandTypeException("Wrong operand " . $a->value);
+                        throw new OperandTypeException("Wrong operand " . $a->type . " " . $b->type);
                     }
                     break;
 
@@ -535,7 +535,7 @@ class Interpreter extends AbstractInterpreter
                             $instructionArray->current = $instructionArray->getLabel($instruction->args[0]->value)->line;
                         }
                     }
-                    else if ($a->type == "string" && $b->type == "string") // if both operands are strings
+                    else if ($this->getType($a) == "string" && $this->getType($b) == "string") // if both operands are strings
                     {
                         if ($a->value != $b->value)
                         {
@@ -672,5 +672,19 @@ class Interpreter extends AbstractInterpreter
         {
             throw new OperandTypeException("Wrong operand " . $symb->value);
         }
+    }
+
+    /**
+     * Returns the type of the operand.
+     * @param Argument $symb Operand.
+     * @return string Type of the operand.
+     */
+    private function getType(Argument $symb) : string
+    {
+        if ($symb->type == "type" || $symb->type == "label")
+        {
+            return "string";
+        }
+        return $symb->type;
     }
 }

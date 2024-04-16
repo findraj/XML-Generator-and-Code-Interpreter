@@ -52,6 +52,15 @@ Pomocou switch-u prejde program cez všetky podporované inčtrukcie a vykoná �
 
 Funkcie na prácu s premennými sú implementované v triede Frame. Globálny rámec je len jeden, takže práca s ním je vcelku triviálna. Problematická je správa dočasných a lokálnych rámcov. Pri vytvorení dočasného rámca sa nastaví premenná `TFexist` na true. Pri dávaní dočasného rámcu do zásobníka rámcov sa táto premenná zmení na false a pri vybraní zo zásobnika na true. Pre prístup k lokálnemu sa rámcu sa vyberie vždy najvrchnejší rámec zo zásobníka rámcov.
 
+## Testovanie
+
+Pre testovanie som používal manuálne púšťanie programu s referenčným vstupom a zdrojom a kontroloval som správnosť výsledku.  
+Na systematické testovanie som použil dostupné testovacie sady od mojich kolegov z ročníka. Nie všetky testy boli úplne validné. Pri sade, ktorá sa mi najviac osvedčila, som dosiahol výsledok:  
+```
+PASSED: 361
+FAILED: 2
+```
+
+
 ## Známe problémy
 1. Získanie typu neinicializovanej premennej. Podľa definície by mal byť výsledok prázdny reťazec. Moja implementácia ukončuje program s návratovou hodnotou 56.
-2. 
