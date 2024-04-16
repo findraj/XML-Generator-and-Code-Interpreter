@@ -44,7 +44,7 @@ Počas kontorly vstupu sa načítaju inštrukcie ako objekty triedy Instruction,
 
 ### Vykonávanie inštrukcií
 
-V "slovníku" inštrukcií je uložený názov a typy argumentov inčtrukcií. Tento "slovník" sa využije pre kontorlu počtu a správnych typov argumentov ešte pred vykonávaním inštrukcií. Ak je typ argumentu oznčený ako `Symb`, tak sa táto kontrola preskakuje.
+V "slovníku" inštrukcií je uložený názov a typy argumentov inčtrukcie. Tento "slovník" sa využije pre kontorlu počtu a správnych typov argumentov ešte pred vykonávaním inštrukcií. Ak je typ argumentu oznčený ako `Symb`, tak sa táto kontrola preskakuje.
 Pre spracovanie argumentov označených `Symb` sa používa funckia `getSymb`, ktorá skontroluje správnosť argumentu a v prípade premennej načíta hodnotu zo správneho rámca.  
 Pomocou switch-u prejde program cez všetky podporované inčtrukcie a vykoná úkon spojený s danou inštrukciou.
 
