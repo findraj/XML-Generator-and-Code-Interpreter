@@ -375,9 +375,12 @@ class Interpreter extends AbstractInterpreter
                             {
                                 $input = "true";
                             }
-                            else if ($input == false) // convert the input to string
+                            else // convert the input to string
                             {
-                                $input = "false";
+                                if ($input != null)
+                                {
+                                    $input = "false";
+                                }
                             }
                             break;
                     }
